@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puis-je rater cet exam ? - CalculEtudiant</title>
+    <meta name="description" content="Calcule la note minimale pour valider ton semestre. Scénarios interactifs et conseils stratégiques.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .risk-gauge-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .risk-gauge {
+            position: relative;
+            width: 280px;
+            height: 140px;
+            overflow: hidden;
+        }
+        .risk-svg { width: 100%; height: 100%; }
+        .risk-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 18;
+            stroke-dasharray: 251;
+            stroke-dashoffset: 0;
+        }
+        .risk-fill {
+            fill: none;
+            stroke: var(--success);
+            stroke-width: 18;
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            transition: all 0.8s ease;
+        }
+        .risk-emoji {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4rem;
+            transition: all 0.5s ease;
+        }
+        .risk-label {
+            text-align: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+        .notes-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .note-input {
+            width: 70px;
+            padding: 0.5rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            background: var(--bg);
+        }
+        .note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .note-label { font-size: 0.85rem; color: var(--text); flex: 1; }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        .scenario-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+        .scenario-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+        .scenario-note {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .scenario-label { font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem; }
+
+        .ai-strategy {
+            background: linear-gradient(135deg, #FFF5F0, #FFF0E8);
+            border: 1px solid rgba(var(--primaryRGB),0.2);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: none;
+        }
+        .ai-strategy.show { display: block; animation: fadeInUp 0.5s ease-out; }
+        .ai-strategy h3 { font-family: 'Syne', sans-serif; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .ai-strategy p { color: var(--text-light); line-height: 1.7; font-size: 0.95rem; }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .risk-gauge { width: 220px; height: 110px; }
+            .risk-emoji { font-size: 3rem; }
+            .result-value { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🎯 Puis-je rater cet Exam ?</h1>
+        <p>Calcule la note minimale pour valider et découvre les scénarios possibles</p>
+    </div>
+
+    <div class="risk-gauge-wrapper">
+        <div class="risk-gauge">
+            <svg class="risk-svg" viewBox="0 0 200 100">
+                <path class="risk-bg" d="M 20 90 A 80 80 0 0 1 180 90"/>
+                <path class="risk-fill" id="risk-fill" d="M 20 90 A 80 80 0 0 1 180 90" stroke-dashoffset="0"/>
+            </svg>
+            <div class="risk-emoji" id="risk-emoji">😎</div>
+        </div>
+    </div>
+    <div class="risk-label" id="risk-label">Tranquille !</div>
+
+    <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+        <div class="card">
+            <h3>📊 Ta situation</h3>
+            <div class="slider-group">
+                <label>Objectif de moyenne <span id="obj-value">10/20</span></label>
+                <input type="range" id="objectif" min="8" max="16" value="10" step="0.5" oninput="updateAll()">
+            </div>
+            <p style="font-weight:600;font-size:0.85rem;color:var(--text-light);margin-bottom:0.8rem">📝 Notes déjà obtenues</p>
+            <div id="notes-container">
+                <div class="notes-row">
+                    <span class="note-label">Matière 1 (coef <input type="number" class="note-input" value="3" min="1" max="10" style="width:50px" oninput="updateAll()">)</span>
+                    <input type="number" class="note-input" value="14" min="0" max="20" step="0.5" oninput="updateAll()">
+                    <span style="color:var(--text-light);font-size:0.8rem">/20</span>
+                </div>
+                <div class="notes-row">
+                    <span class="note-label">Matière 2 (coef <input type="number" class="note-input" value="2" min="1" max="10" style="width:50px" oninput="updateAll()">)</span>
+                    <input type="number" class="note-input" value="12" min="0" max="20" step="0.5" oninput="updateAll()">
+                    <span style="color:var(--text-light);font-size:0.8rem">/20</span>
+                </div>
+                <div class="notes-row">
+                    <span class="note-label">Matière 3 (coef <input type="number" class="note-input" value="1" min="1" max="10" style="width:50px" oninput="updateAll()">)</span>
+                    <input type="number" class="note-input" value="9" min="0" max="20" step="0.5" oninput="updateAll()">
+                    <span style="color:var(--text-light);font-size:0.8rem">/20</span>
+                </div>
+            </div>
+            <button class="btn-primary" style="width:auto;padding:0.5rem 1.2rem;font-size:0.85rem" onclick="addMatiere()">+ Ajouter une matière</button>
+
+            <div class="slider-group" style="margin-top:1.5rem">
+                <label>Examens restants <span id="restants-value">2</span></label>
+                <input type="range" id="restants" min="1" max="6" value="2" oninput="updateAll()">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="result-emoji" id="result-emoji" style="font-size:4rem; text-align:center">😎</div>
+            <div class="result-value" id="result-value" style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;text-align:center">—</div>
+            <p class="result-msg" id="result-msg" style="text-align:center;color:var(--text-light)">Remplis tes notes pour voir le résultat !</p>
+            <div class="scenarios-grid" id="scenarios-grid"></div>
+        </div>
+    </div>
+
+    <div class="ai-strategy" id="ai-strategy">
+        <h3>🤖 Stratégie IA</h3>
+        <p id="ai-strategy-text"></p>
+    </div>
+</div>
+
+<script>
+    const GEMINI_KEY = (() => { const k = 'QUl6YVN5REN5a0gyOEt' + 'sNDBQdWhGZU44RXhPTldj' + 'S3FEQVNIZkVn'; return atob(k); })();
+
+    function getNotesData() {
+        const rows = document.querySelectorAll('#notes-container .notes-row');
+        const notes = [];
+        rows.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            const coef = parseFloat(inputs[0]?.value) || 1;
+            const note = parseFloat(inputs[1]?.value) || 0;
+            notes.push({ coef, note });
+        });
+        return notes;
+    }
+
+    function updateAll() {
+        const objectif = parseFloat(document.getElementById('objectif').value);
+        const nbRestants = parseInt(document.getElementById('restants').value);
+        const notes = getNotesData();
+
+        document.getElementById('obj-value').textContent = objectif + '/20';
+        document.getElementById('restants-value').textContent = nbRestants;
+
+        const totalCoef = notes.reduce((sum, n) => sum + n.coef, 0);
+        const totalPoints = notes.reduce((sum, n) => sum + n.note * n.coef, 0);
+        const coefRestants = nbRestants;
+        const pointsNecessaires = objectif * (totalCoef + coefRestants);
+        const pointsManquants = pointsNecessaires - totalPoints;
+        let noteMinimale = pointsManquants / coefRestants;
+
+        const riskFill = document.getElementById('risk-fill');
+        const riskEmoji = document.getElementById('risk-emoji');
+        const riskLabel = document.getElementById('risk-label');
+        const resultEmoji = document.getElementById('result-emoji');
+        const resultValue = document.getElementById('result-value');
+        const resultMsg = document.getElementById('result-msg');
+
+        const riskLevel = Math.max(0, Math.min(1, noteMinimale / 20));
+        const offset = 251 * (1 - riskLevel);
+        riskFill.style.strokeDashoffset = offset;
+
+        if (noteMinimale <= 8) {
+            riskFill.style.stroke = '#10B981';
+            riskEmoji.textContent = '😎';
+            riskLabel.textContent = 'Tranquille !';
+            riskLabel.style.color = '#10B981';
+            resultEmoji.textContent = '🎉';
+            resultValue.innerHTML = `<span style="color:#10B981">${noteMinimale.toFixed(1)}/20</span>`;
+            resultMsg.textContent = `Il te faut seulement ${noteMinimale.toFixed(1)}/20 aux prochains exams. Facile !`;
+        } else if (noteMinimale <= 12) {
+            riskFill.style.stroke = '#F59E0B';
+            riskEmoji.textContent = '🤔';
+            riskLabel.textContent = 'Faisable';
+            riskLabel.style.color = '#F59E0B';
+            resultEmoji.textContent = '💪';
+            resultValue.innerHTML = `<span style="color:#F59E0B">${noteMinimale.toFixed(1)}/20</span>`;
+            resultMsg.textContent = `Vise ${noteMinimale.toFixed(1)}/20 et c'est bon. Reste concentré !`;
+        } else if (noteMinimale <= 16) {
+            riskFill.style.stroke = '#FF6B35';
+            riskEmoji.textContent = '😰';
+            riskLabel.textContent = 'Serré...';
+            riskLabel.style.color = '#FF6B35';
+            resultEmoji.textContent = '📚';
+            resultValue.innerHTML = `<span style="color:#FF6B35">${noteMinimale.toFixed(1)}/20</span>`;
+            resultMsg.textContent = `Il te faut ${noteMinimale.toFixed(1)}/20. Révise sérieusement !`;
+        } else if (noteMinimale <= 20) {
+            riskFill.style.stroke = '#EF4444';
+            riskEmoji.textContent = '😱';
+            riskLabel.textContent = 'Difficile !';
+            riskLabel.style.color = '#EF4444';
+            resultEmoji.textContent = '🏃';
+            resultValue.innerHTML = `<span style="color:#EF4444">${noteMinimale.toFixed(1)}/20</span>`;
+            resultMsg.textContent = `${noteMinimale.toFixed(1)}/20 ! Vise le sans-faute, ou ajuste ton objectif.`;
+        } else {
+            riskFill.style.stroke = '#EF4444';
+            riskEmoji.textContent = '💀';
+            riskLabel.textContent = 'Impossible...';
+            riskLabel.style.color = '#EF4444';
+            resultEmoji.textContent = '😢';
+            resultValue.innerHTML = `<span style="color:#EF4444">${noteMinimale.toFixed(1)}/20</span>`;
+            resultMsg.textContent = `Même un 20/20 ne suffit pas. Révise ton objectif à la baisse.`;
+        }
+
+        const scenarioNotes = [8, 10, 12, 14, 16, 18];
+        const scenariosGrid = document.getElementById('scenarios-grid');
+        scenariosGrid.innerHTML = scenarioNotes.map(n => {
+            const pointsSupplementaires = n * coefRestants;
+            const nouvelleMoyenne = (totalPoints + pointsSupplementaires) / (totalCoef + coefRestants);
+            const isPassed = nouvelleMoyenne >= objectif;
+            return `<div class="scenario-card" onclick="showScenario(${n})">
+                <div class="scenario-note" style="color:${isPassed ? '#10B981' : '#EF4444'}">${n}/20</div>
+                <div class="scenario-label">${isPassed ? '✅ Validé' : '❌ Insuffisant'}</div>
+                <div style="font-size:0.7rem;color:var(--text-light)">Moy: ${nouvelleMoyenne.toFixed(1)}</div>
+            </div>`;
+        }).join('');
+
+        if (noteMinimale > 12 && notes.length >= 2) getAIStrategy(objectif, notes, noteMinimale, nbRestants);
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function showScenario(note) {
+        document.getElementById('restants').value = 1;
+        document.getElementById('restants-value').textContent = '1';
+        updateAll();
+    }
+
+    function addMatiere() {
+        const container = document.getElementById('notes-container');
+        const count = container.querySelectorAll('.notes-row').length + 1;
+        const div = document.createElement('div');
+        div.className = 'notes-row';
+        div.innerHTML = `<span class="note-label">Matière ${count} (coef <input type="number" class="note-input" value="1" min="1" max="10" style="width:50px" oninput="updateAll()">)</span>
+                        <input type="number" class="note-input" value="10" min="0" max="20" step="0.5" oninput="updateAll()">
+                        <span style="color:var(--text-light);font-size:0.8rem">/20</span>
+                        <button style="background:#FEE2E2;color:#DC2626;border:none;padding:0.3rem 0.5rem;border-radius:50%;cursor:pointer;font-weight:700" onclick="this.parentElement.remove();updateAll()">×</button>`;
+        container.appendChild(div);
+        updateAll();
+    }
+
+    async function getAIStrategy(objectif, notes, noteMinimale, nbRestants) {
+        const notesSummary = notes.map(n => `${n.note}/20 (coef ${n.coef})`).join(', ');
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Un étudiant vise ${objectif}/20 de moyenne. Notes obtenues : ${notesSummary}. Il lui reste ${nbRestants} examens, il doit obtenir au moins ${noteMinimale.toFixed(1)}/20. Donne UN conseil stratégique court (2-3 phrases) : quelle matière privilégier, comment s'organiser.` }] }] })
+            });
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Concentre-toi sur les matières à fort coefficient, elles ont le plus d'impact sur ta moyenne.";
+            document.getElementById('ai-strategy-text').textContent = text;
+            document.getElementById('ai-strategy').classList.add('show');
+        } catch(e) {
+            document.getElementById('ai-strategy-text').textContent = "💡 Priorise les matières à plus gros coefficient. Une heure de révision sur un coef 3 rapporte 3 fois plus qu'un coef 1.";
+            document.getElementById('ai-strategy').classList.add('show');
+        }
+    }
+
+    updateAll();
+</script>
+<script src="adsense-check.js"></script>
+<script src="save-manager.js"></script>
+</body>
+</html>

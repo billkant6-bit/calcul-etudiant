@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité - CalculEtudiant</title>
+    <meta name="description" content="Comment CalculEtudiant protège ta vie privée. Aucune donnée collectée, tout reste dans ton navigateur.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .privacy-container { max-width: 800px; margin: 0 auto; }
+        .privacy-card { background: var(--card); border-radius: var(--radius); padding: 2rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
+        .privacy-card h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.8rem; color: var(--text); }
+        .privacy-card h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 0.8rem; color: var(--primary); }
+        .privacy-card p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem; }
+        .privacy-card ul { list-style: none; padding: 0; }
+        .privacy-card ul li { padding: 0.5rem 0; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 0.8rem; }
+        .privacy-card ul li::before { content: '🔒'; flex-shrink: 0; }
+        .privacy-card ul li.no-collect::before { content: '🚫'; }
+        .privacy-card ul li.check::before { content: '✅'; }
+        .highlight-box { background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 15px; padding: 1.5rem; margin: 1.5rem 0; }
+        .highlight-box p { color: #059669; font-weight: 600; margin: 0; }
+        .highlight-box.warning { background: #FFF7ED; border-color: #FED7AA; }
+        .highlight-box.warning p { color: #EA580C; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .summary-item { background: var(--bg); border-radius: 15px; padding: 1rem; text-align: center; border: 1px solid var(--border); }
+        .summary-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .summary-title { font-weight: 700; margin-bottom: 0.3rem; color: var(--text); }
+        .summary-desc { font-size: 0.85rem; color: var(--text-secondary); }
+        .last-update { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+        .contact-cta { text-align: center; padding: 2rem; background: var(--primary-light); border-radius: var(--radius); margin-top: 2rem; }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;
+            max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges"><span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span><span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span><span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span><span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span><span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span></div>
+</div>
+<div class="container">
+    <div class="page-header">
+        <h1>🔒 Politique de Confidentialité</h1>
+        <p>Chez CalculEtudiant, ta vie privée est notre priorité. Voici comment on protège tes données.</p>
+    </div>
+    <p class="last-update">📅 Dernière mise à jour : Mai 2026</p>
+    <div class="privacy-container">
+        <div class="privacy-card">
+            <h2>📊 En résumé</h2>
+            <div class="summary-grid">
+                <div class="summary-item"><div class="summary-icon">🚫</div><div class="summary-title">Zéro collecte</div><div class="summary-desc">Aucune donnée perso</div></div>
+                <div class="summary-item"><div class="summary-icon">💻</div><div class="summary-title">Stockage local</div><div class="summary-desc">Tout dans ton navigateur</div></div>
+                <div class="summary-item"><div class="summary-icon">🔐</div><div class="summary-title">Pas de serveur</div><div class="summary-desc">Rien n'est envoyé</div></div>
+                <div class="summary-item"><div class="summary-icon">🍪</div><div class="summary-title">Cookies minimes</div><div class="summary-desc">Juste pour le thème</div></div>
+            </div>
+        </div>
+        <div class="privacy-card">
+            <h2>📋 1. Quelles données collectons-nous ?</h2>
+            <h3>✅ Ce qu'on collecte (presque rien)</h3>
+            <ul><li class="check"><strong>Ton thème préféré</strong> — sauvegardé localement</li><li class="check"><strong>Tes sauvegardes</strong> (CV, fiches, quiz, objectifs) — stockées uniquement dans ton navigateur</li></ul>
+            <h3>🚫 Ce qu'on ne collecte JAMAIS</h3>
+            <ul><li class="no-collect">Ton nom, prénom, email</li><li class="no-collect">Tes notes scolaires</li><li class="no-collect">Tes informations financières</li><li class="no-collect">Ton adresse IP, localisation, historique de navigation</li></ul>
+            <div class="highlight-box"><p>🔒 Tous les calculs (moyenne, budget, bourse) se font directement dans ton navigateur. Aucune donnée n'est envoyée sur un serveur.</p></div>
+        </div>
+        <div class="privacy-card">
+            <h2>🍪 2. Utilisation des cookies</h2>
+            <p>On utilise <strong>un seul cookie</strong> : celui qui sauvegarde ton thème de couleur préféré.</p>
+            <div class="highlight-box"><p>🍪 Cookie "selectedTheme" — expire jamais — contient juste le nom du thème choisi.</p></div>
+            <p><strong>On n'utilise pas :</strong> cookies publicitaires, cookies de tracking, cookies tiers.</p>
+        </div>
+        <div class="privacy-card">
+            <h2>💾 3. Stockage local (localStorage)</h2>
+            <ul><li class="check">Les données restent sur <strong>ton appareil</strong></li><li class="check">On <strong>ne peut pas</strong> les voir</li><li class="check">Tu peux les <strong>supprimer</strong> en vidant le cache</li><li class="check">Tu peux les <strong>exporter</strong> via <a href="mes-sauvegardes.html">Mes Sauvegardes</a></li></ul>
+            <div class="highlight-box warning"><p>⚠️ Si tu changes d'appareil ou de navigateur, tes données ne te suivent pas automatiquement. Pense à les exporter/importer !</p></div>
+        </div>
+        <div class="privacy-card">
+            <h2>🔐 4. Sécurité de tes données</h2>
+            <ul><li class="check">Garde ton navigateur à jour</li><li class="check">Utilise un mot de passe pour verrouiller ton ordinateur</li><li class="check">Exporte régulièrement tes sauvegardes</li></ul>
+        </div>
+        <div class="privacy-card">
+            <h2>📜 5. Tes droits (RGPD)</h2>
+            <ul><li class="check"><strong>Droit d'accès</strong> : toutes tes données sont visibles dans <a href="mes-sauvegardes.html">Mes Sauvegardes</a></li><li class="check"><strong>Droit de suppression</strong> : vide le cache ou utilise "Tout supprimer" dans Mes Sauvegardes</li><li class="check"><strong>Droit de portabilité</strong> : export/import dans Mes Sauvegardes</li></ul>
+        </div>
+        <div class="privacy-card">
+            <h2>📧 6. Contact</h2>
+            <div class="contact-cta"><h3>📬 Une question ?</h3><p>On répond sous 24-48h</p><p style="font-size:1.2rem;margin-top:0.5rem">📧 <a href="mailto:billkant6@gmail.com">billkant6@gmail.com</a></p></div>
+        </div>
+    </div>
+</div>
+<footer><p>© 2026 CalculEtudiant - Fait avec ❤️ pour les étudiants</p></footer>
+<script src="adsense-check.js"></script>
+</body>
+</html>

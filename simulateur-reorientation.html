@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Réorientation - CalculEtudiant</title>
+    <meta name="description" content="Explore les filières qui te correspondent selon tes notes et tes centres d'intérêt.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .interests-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.5rem; }
+        .interest-tag {
+            background: var(--bg); border: 2px solid var(--border);
+            padding: 0.6rem 1.2rem; border-radius: 50px;
+            cursor: pointer; font-weight: 600; font-size: 0.9rem;
+            transition: all var(--transition);
+        }
+        .interest-tag:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .interest-tag.selected { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+        .filiere-card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.2rem;
+            margin-bottom: 0.8rem; transition: all var(--transition);
+            cursor: pointer;
+        }
+        .filiere-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .filiere-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .filiere-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text); }
+        .filiere-match { background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.8rem; border-radius: 50px; font-weight: 700; font-size: 0.8rem; }
+        .filiere-desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem; }
+        .filiere-info { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-light); }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🧭 Simulateur de Réorientation</h1>
+        <p>Découvre les filières qui te correspondent selon ton profil</p>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">🎯 Tes centres d'intérêt</h2>
+        <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:1rem">Sélectionne ce qui te plaît le plus :</p>
+        <div class="interests-grid" id="interests-grid">
+            <button class="interest-tag" data-interest="sciences" onclick="toggleInterest(this)">🔬 Sciences</button>
+            <button class="interest-tag" data-interest="maths" onclick="toggleInterest(this)">📐 Maths</button>
+            <button class="interest-tag" data-interest="informatique" onclick="toggleInterest(this)">💻 Informatique</button>
+            <button class="interest-tag" data-interest="litterature" onclick="toggleInterest(this)">📖 Littérature</button>
+            <button class="interest-tag" data-interest="langues" onclick="toggleInterest(this)">🌍 Langues</button>
+            <button class="interest-tag" data-interest="economie" onclick="toggleInterest(this)">📈 Économie</button>
+            <button class="interest-tag" data-interest="art" onclick="toggleInterest(this)">🎨 Art & Design</button>
+            <button class="interest-tag" data-interest="sport" onclick="toggleInterest(this)">⚽ Sport</button>
+            <button class="interest-tag" data-interest="sante" onclick="toggleInterest(this)">🏥 Santé</button>
+            <button class="interest-tag" data-interest="droit" onclick="toggleInterest(this)">⚖️ Droit</button>
+            <button class="interest-tag" data-interest="psychologie" onclick="toggleInterest(this)">🧠 Psychologie</button>
+            <button class="interest-tag" data-interest="commerce" onclick="toggleInterest(this)">🛒 Commerce</button>
+        </div>
+        <button class="btn-primary" onclick="suggestFilieres()">🔍 Trouver ma filière</button>
+    </div>
+
+    <div id="resultats" style="display:none">
+        <div class="card">
+            <h2 class="section-title">🎓 Filières suggérées</h2>
+            <div id="filieres-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedInterests = [];
+    const filieres = [
+        { name: 'Licence Informatique', interests: ['informatique', 'maths'], desc: 'Programmation, algorithmes, développement logiciel.', salaire: '35-45k€', duree: '3 ans' },
+        { name: 'Médecine (PASS/LAS)', interests: ['sciences', 'sante'], desc: 'Études de santé, accès aux professions médicales.', salaire: '50-200k€', duree: '9-12 ans' },
+        { name: 'École d\'ingénieurs', interests: ['sciences', 'maths', 'informatique'], desc: 'Prépa scientifique puis spécialisation.', salaire: '38-50k€', duree: '5 ans' },
+        { name: 'Licence Économie-Gestion', interests: ['economie', 'commerce'], desc: 'Finance, marketing, gestion d\'entreprise.', salaire: '30-45k€', duree: '3 ans' },
+        { name: 'Licence de Droit', interests: ['droit'], desc: 'Droit privé, public, international.', salaire: '25-80k€', duree: '3-5 ans' },
+        { name: 'Licence Psychologie', interests: ['psychologie'], desc: 'Psychologie clinique, cognitive, sociale.', salaire: '22-35k€', duree: '5 ans' },
+        { name: 'Licence Langues Étrangères', interests: ['langues', 'commerce'], desc: 'Traduction, commerce international.', salaire: '25-38k€', duree: '3 ans' },
+        { name: 'École d\'Art & Design', interests: ['art'], desc: 'Design graphique, architecture, animation.', salaire: '25-40k€', duree: '3-5 ans' },
+        { name: 'STAPS (Sciences du Sport)', interests: ['sport', 'sciences'], desc: 'Entraînement, management du sport.', salaire: '22-32k€', duree: '3 ans' },
+    ];
+
+    function toggleInterest(btn) {
+        btn.classList.toggle('selected');
+        const interest = btn.dataset.interest;
+        if (btn.classList.contains('selected')) {
+            selectedInterests.push(interest);
+        } else {
+            selectedInterests = selectedInterests.filter(i => i !== interest);
+        }
+    }
+
+    function suggestFilieres() {
+        if (selectedInterests.length === 0) {
+            alert('Sélectionne au moins un centre d\'intérêt !');
+            return;
+        }
+        const scored = filieres.map(f => {
+            const common = f.interests.filter(i => selectedInterests.includes(i));
+            const score = Math.round((common.length / Math.max(f.interests.length, selectedInterests.length)) * 100);
+            return { ...f, score };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        const top = scored.slice(0, 5);
+        const container = document.getElementById('filieres-list');
+        container.innerHTML = top.map((f, i) => `
+            <div class="filiere-card" style="animation: fadeInUp ${0.3 + i * 0.1}s ease-out">
+                <div class="filiere-header">
+                    <span class="filiere-name">${f.name}</span>
+                    <span class="filiere-match">${f.score}% match</span>
+                </div>
+                <p class="filiere-desc">${f.desc}</p>
+                <div class="filiere-info">
+                    <span>💰 ${f.salaire}</span>
+                    <span>📅 ${f.duree}</span>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('resultats').style.display = 'block';
+        document.getElementById('resultats').scrollIntoView({ behavior: 'smooth' });
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

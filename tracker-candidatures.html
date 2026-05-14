@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker de Candidatures - CalculEtudiant</title>
+    <meta name="description" content="Suis toutes tes candidatures de stage et job : envoyé, relance, entretien, accepté, refusé.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280; --text-muted: #9CA3AF;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #E8FFF4 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .add-form { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+        .add-form .input-group { flex: 1; min-width: 150px; margin-bottom: 0; }
+        .add-form .input-group input, .add-form .input-group select { width: 100%; padding: 0.8rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--bg); color: var(--text); transition: all var(--transition); }
+        .add-form .input-group input:focus, .add-form .input-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        .btn-add { padding: 0.8rem 1.5rem; background: var(--primary); color: #FFF; border: none; border-radius: 50px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all var(--transition); box-shadow: 0 4px 16px rgba(255,107,53,0.2); white-space: nowrap; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,53,0.3); }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; box-shadow: var(--shadow); transition: all var(--transition); }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-value { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+        .stat-label { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; margin-top: 0.2rem; }
+
+        .kanban { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+        .kanban-col { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); min-height: 300px; }
+        .kanban-col h3 { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); text-align: center; }
+        .kanban-col.envoye h3 { color: #2563EB; border-bottom-color: #2563EB; }
+        .kanban-col.relance h3 { color: #F59E0B; border-bottom-color: #F59E0B; }
+        .kanban-col.entretien h3 { color: #7C3AED; border-bottom-color: #7C3AED; }
+        .kanban-col.accepte h3 { color: #10B981; border-bottom-color: #10B981; }
+        .kanban-col.refuse h3 { color: #EF4444; border-bottom-color: #EF4444; }
+
+        .candidature-card {
+            background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 0.8rem; margin-bottom: 0.6rem; cursor: grab; transition: all var(--transition); position: relative;
+        }
+        .candidature-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+        .candidature-card:active { cursor: grabbing; }
+        .cand-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.3rem; }
+        .cand-company { font-size: 0.75rem; color: var(--primary); }
+        .cand-date { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; }
+        .cand-delete { position: absolute; top: 5px; right: 8px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; }
+        .cand-delete:hover { color: var(--danger); }
+
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        @media (max-width: 900px) { .kanban { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .kanban { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>💼 Tracker de Candidatures</h1>
+        <p>Suis toutes tes candidatures de stage et job : envoyé, relance, entretien, accepté, refusé</p>
+    </div>
+
+    <div class="add-form">
+        <div class="input-group" style="flex:2"><input type="text" id="cand-title" placeholder="Poste (ex: Stage Développeur)"></div>
+        <div class="input-group" style="flex:2"><input type="text" id="cand-company" placeholder="Entreprise (ex: Google)"></div>
+        <button class="btn-add" onclick="addCandidature()">➕ Ajouter</button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card"><div class="stat-value" style="color:#2563EB" id="stat-envoye">0</div><div class="stat-label">📤 Envoyées</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#F59E0B" id="stat-relance">0</div><div class="stat-label">🔄 Relancées</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#7C3AED" id="stat-entretien">0</div><div class="stat-label">🎯 Entretiens</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#10B981" id="stat-accepte">0</div><div class="stat-label">✅ Acceptées</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#EF4444" id="stat-refuse">0</div><div class="stat-label">❌ Refusées</div></div>
+    </div>
+
+    <div class="kanban">
+        <div class="kanban-col envoye" id="col-envoye" ondragover="allowDrop(event)" ondrop="dropCard(event, 'envoye')"><h3>📤 Envoyé</h3><div id="list-envoye"></div></div>
+        <div class="kanban-col relance" id="col-relance" ondragover="allowDrop(event)" ondrop="dropCard(event, 'relance')"><h3>🔄 Relance</h3><div id="list-relance"></div></div>
+        <div class="kanban-col entretien" id="col-entretien" ondragover="allowDrop(event)" ondrop="dropCard(event, 'entretien')"><h3>🎯 Entretien</h3><div id="list-entretien"></div></div>
+        <div class="kanban-col accepte" id="col-accepte" ondragover="allowDrop(event)" ondrop="dropCard(event, 'accepte')"><h3>✅ Accepté</h3><div id="list-accepte"></div></div>
+        <div class="kanban-col refuse" id="col-refuse" ondragover="allowDrop(event)" ondrop="dropCard(event, 'refuse')"><h3>❌ Refusé</h3><div id="list-refuse"></div></div>
+    </div>
+</div>
+
+
+<script src="adsense-check.js"></script>
+</body>
+</html>

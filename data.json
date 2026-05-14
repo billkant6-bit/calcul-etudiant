@@ -1,0 +1,317 @@
+{
+  "derniereMiseAJourGlobale": "2026-05-10",
+  "banques": [
+    {
+      "id": 1,
+      "name": "BoursoBank",
+      "logo": "🏦",
+      "couleur": "#5C6BC0",
+      "offer": "Compte gratuit + 80€ offerts",
+      "score": 9.2,
+      "details": [
+        { "text": "0€ de frais", "type": "good" },
+        { "text": "Carte Visa gratuite", "type": "good" },
+        { "text": "Découvert autorisé", "type": "good" },
+        { "text": "80€ prime de bienvenue", "type": "good" }
+      ],
+      "lien": "https://www.boursobank.com",
+      "tags": ["gratuit", "prime", "mobile"],
+      "gratuit": true,
+      "prime": true,
+      "mobile": true
+    },
+    {
+      "id": 2,
+      "name": "Hello Bank!",
+      "logo": "🏦",
+      "couleur": "#8BC34A",
+      "offer": "Compte gratuit + 80€ offerts",
+      "score": 8.8,
+      "details": [
+        { "text": "0€ de frais", "type": "good" },
+        { "text": "Carte gratuite", "type": "good" },
+        { "text": "Découvert selon profil", "type": "warn" },
+        { "text": "80€ prime bienvenue", "type": "good" }
+      ],
+      "lien": "https://www.hello-bank.fr",
+      "tags": ["gratuit", "prime", "mobile"],
+      "gratuit": true,
+      "prime": true,
+      "mobile": true
+    },
+    {
+      "id": 3,
+      "name": "Fortuneo",
+      "logo": "🏦",
+      "couleur": "#FF9800",
+      "offer": "Compte gratuit + 80€ à 150€ offerts",
+      "score": 9.0,
+      "details": [
+        { "text": "0€ de frais", "type": "good" },
+        { "text": "Carte Gold gratuite", "type": "good" },
+        { "text": "Découvert selon profil", "type": "warn" },
+        { "text": "Jusqu'à 150€ offerts", "type": "good" }
+      ],
+      "lien": "https://www.fortuneo.fr",
+      "tags": ["gratuit", "prime", "mobile"],
+      "gratuit": true,
+      "prime": true,
+      "mobile": true
+    },
+    {
+      "id": 4,
+      "name": "BNP Paribas",
+      "logo": "🏦",
+      "couleur": "#4CAF50",
+      "offer": "Offre Esprit Libre (2€/mois)",
+      "score": 7.5,
+      "details": [
+        { "text": "2€/mois", "type": "warn" },
+        { "text": "Carte Visa incluse", "type": "good" },
+        { "text": "Découvert possible", "type": "good" },
+        { "text": "Agences physiques", "type": "good" }
+      ],
+      "lien": "https://www.bnpparibas.fr",
+      "tags": [],
+      "gratuit": false,
+      "prime": false,
+      "mobile": false
+    },
+    {
+      "id": 5,
+      "name": "Société Générale",
+      "logo": "🏦",
+      "couleur": "#E53935",
+      "offer": "Formule Jeune (2€/mois)",
+      "score": 7.3,
+      "details": [
+        { "text": "2€/mois", "type": "warn" },
+        { "text": "Carte Visa incluse", "type": "good" },
+        { "text": "Découvert possible", "type": "good" },
+        { "text": "Agences physiques", "type": "good" }
+      ],
+      "lien": "https://www.societegenerale.fr",
+      "tags": [],
+      "gratuit": false,
+      "prime": false,
+      "mobile": false
+    },
+    {
+      "id": 6,
+      "name": "Revolut",
+      "logo": "🏦",
+      "couleur": "#2196F3",
+      "offer": "Compte gratuit (carte virtuelle)",
+      "score": 8.5,
+      "details": [
+        { "text": "0€ de frais", "type": "good" },
+        { "text": "Carte virtuelle gratuite", "type": "good" },
+        { "text": "Pas de découvert", "type": "warn" },
+        { "text": "100% mobile", "type": "good" }
+      ],
+      "lien": "https://www.revolut.com",
+      "tags": ["gratuit", "mobile"],
+      "gratuit": true,
+      "prime": false,
+      "mobile": true
+    },
+    {
+      "id": 7,
+      "name": "N26",
+      "logo": "🏦",
+      "couleur": "#00BCD4",
+      "offer": "Compte Standard gratuit",
+      "score": 8.3,
+      "details": [
+        { "text": "0€ de frais", "type": "good" },
+        { "text": "Carte virtuelle gratuite", "type": "good" },
+        { "text": "Pas de découvert", "type": "warn" },
+        { "text": "100% mobile", "type": "good" }
+      ],
+      "lien": "https://www.n26.com",
+      "tags": ["gratuit", "mobile"],
+      "gratuit": true,
+      "prime": false,
+      "mobile": true
+    },
+    {
+      "id": 8,
+      "name": "Crédit Agricole",
+      "logo": "🏦",
+      "couleur": "#009688",
+      "offer": "Compte jeune (1€/mois)",
+      "score": 7.0,
+      "details": [
+        { "text": "1€/mois", "type": "warn" },
+        { "text": "Carte incluse", "type": "good" },
+        { "text": "Découvert possible", "type": "good" },
+        { "text": "Agences physiques", "type": "good" }
+      ],
+      "lien": "https://www.credit-agricole.fr",
+      "tags": [],
+      "gratuit": false,
+      "prime": false,
+      "mobile": false
+    }
+  ],
+  "forfaitsMobile": [
+    {
+      "id": 1,
+      "name": "Free",
+      "logo": "📱",
+      "couleur": "#E53935",
+      "prix": 9.99,
+      "data": "150 Go 5G",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.free.fr",
+      "best": true,
+      "tags": ["all", "pas-cher", "5g"]
+    },
+    {
+      "id": 2,
+      "name": "Sosh (Orange)",
+      "logo": "📱",
+      "couleur": "#FF9800",
+      "prix": 10.99,
+      "data": "100 Go 5G",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.sosh.fr",
+      "best": false,
+      "tags": ["all", "pas-cher", "5g"]
+    },
+    {
+      "id": 3,
+      "name": "B&You (Bouygues)",
+      "logo": "📱",
+      "couleur": "#2196F3",
+      "prix": 9.99,
+      "data": "50 Go 5G",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.bouyguestelecom.fr",
+      "best": false,
+      "tags": ["all", "pas-cher", "5g"]
+    },
+    {
+      "id": 4,
+      "name": "RED (SFR)",
+      "logo": "📱",
+      "couleur": "#E91E63",
+      "prix": 8.99,
+      "data": "40 Go 4G",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.red-by-sfr.fr",
+      "best": false,
+      "tags": ["all", "pas-cher"]
+    },
+    {
+      "id": 5,
+      "name": "Prixtel",
+      "logo": "📱",
+      "couleur": "#4CAF50",
+      "prix": 7.99,
+      "data": "30 Go 4G",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.prixtel.com",
+      "best": false,
+      "tags": ["all", "pas-cher"]
+    },
+    {
+      "id": 6,
+      "name": "Orange",
+      "logo": "📱",
+      "couleur": "#FF9800",
+      "prix": 24.99,
+      "data": "200 Go 5G",
+      "appelle": "Illimités",
+      "engagement": "Avec engagement",
+      "lien": "https://www.orange.fr",
+      "best": false,
+      "tags": ["all", "illimite", "5g"]
+    },
+    {
+      "id": 7,
+      "name": "SFR",
+      "logo": "📱",
+      "couleur": "#E91E63",
+      "prix": 22.99,
+      "data": "200 Go 5G",
+      "appelle": "Illimités",
+      "engagement": "Avec engagement",
+      "lien": "https://www.sfr.fr",
+      "best": false,
+      "tags": ["all", "illimite", "5g"]
+    },
+    {
+      "id": 8,
+      "name": "Bouygues Telecom",
+      "logo": "📱",
+      "couleur": "#2196F3",
+      "prix": 21.99,
+      "data": "150 Go 5G",
+      "appelle": "Illimités",
+      "engagement": "Avec engagement",
+      "lien": "https://www.bouyguestelecom.fr",
+      "best": false,
+      "tags": ["all", "illimite", "5g"]
+    }
+  ],
+  "forfaitsInternet": [
+    {
+      "id": 1,
+      "name": "Freebox Pop",
+      "logo": "🌐",
+      "couleur": "#E53935",
+      "prix": 29.99,
+      "data": "Fibre 5 Gb/s",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.free.fr",
+      "best": true,
+      "tags": ["all"]
+    },
+    {
+      "id": 2,
+      "name": "Sosh Fibre",
+      "logo": "🌐",
+      "couleur": "#FF9800",
+      "prix": 19.99,
+      "data": "Fibre 300 Mb/s",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.sosh.fr",
+      "best": false,
+      "tags": ["all", "pas-cher"]
+    },
+    {
+      "id": 3,
+      "name": "B&You Fibre",
+      "logo": "🌐",
+      "couleur": "#2196F3",
+      "prix": 23.99,
+      "data": "Fibre 1 Gb/s",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.bouyguestelecom.fr",
+      "best": false,
+      "tags": ["all"]
+    },
+    {
+      "id": 4,
+      "name": "RED Box",
+      "logo": "🌐",
+      "couleur": "#E91E63",
+      "prix": 19.99,
+      "data": "Fibre 500 Mb/s",
+      "appelle": "Illimités",
+      "engagement": "Sans engagement",
+      "lien": "https://www.red-by-sfr.fr",
+      "best": false,
+      "tags": ["all", "pas-cher"]
+    }
+  ]
+}

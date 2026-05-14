@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Prioritaire - CalculEtudiant</title>
+    <meta name="description" content="Organise tes tâches par priorité avec la matrice Eisenhower. Ne rate plus aucune échéance.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .add-form {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .add-form .input-group { flex: 1; min-width: 150px; margin-bottom: 0; }
+        .add-form .input-group input,
+        .add-form .input-group select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+        }
+        .add-form .input-group input:focus,
+        .add-form .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+        .btn-add-task {
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .btn-add-task:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primaryRGB),0.3); }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+            transition: all var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .stat-value { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; }
+        .stat-label { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; margin-top: 0.2rem; }
+
+        .eisenhower-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1.5rem;
+            min-height: 500px;
+        }
+        .quadrant {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .quadrant-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .quadrant-icon {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .quadrant-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+        .quadrant-subtitle { font-size: 0.7rem; color: var(--text-light); }
+        .quadrant-count {
+            margin-left: auto;
+            background: var(--bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .quadrant-tasks { flex: 1; overflow-y: auto; max-height: 300px; }
+        .task-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.5rem;
+            cursor: grab;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            position: relative;
+        }
+        .task-card:hover { border-color: var(--primary); transform: translateX(3px); }
+        .task-card:active { cursor: grabbing; }
+        .task-card.done { opacity: 0.5; }
+        .task-card.done .task-title { text-decoration: line-through; }
+        .task-checkbox {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: transparent;
+        }
+        .task-checkbox:hover { border-color: var(--primary); }
+        .task-card.done .task-checkbox { background: var(--success); border-color: var(--success); color: #FFF; }
+        .task-content { flex: 1; }
+        .task-title { font-weight: 600; font-size: 0.85rem; }
+        .task-date { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .task-delete {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0.2rem;
+        }
+        .task-delete:hover { color: var(--danger); }
+        .task-priority {
+            width: 4px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+        .task-priority.urgent-important { background: #EF4444; }
+        .task-priority.non-urgent-important { background: #2563EB; }
+        .task-priority.urgent-non-important { background: #F59E0B; }
+        .task-priority.non-urgent-non-important { background: #10B981; }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .eisenhower-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+            .add-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>📋 To-Do List Prioritaire</h1>
+        <p>Organise tes tâches avec la matrice d'Eisenhower : urgent, important, ou les deux</p>
+    </div>
+
+    <div class="add-form">
+        <div class="input-group" style="flex:2">
+            <input type="text" id="new-task-title" placeholder="🎯 Nouvelle tâche...">
+        </div>
+        <div class="input-group">
+            <select id="new-task-priority">
+                <option value="urgent-important">🔴 Urgent & Important</option>
+                <option value="non-urgent-important">🔵 Important, Pas Urgent</option>
+                <option value="urgent-non-important">🟡 Urgent, Pas Important</option>
+                <option value="non-urgent-non-important" selected>🟢 Ni Urgent, Ni Important</option>
+            </select>
+        </div>
+        <div class="input-group" style="max-width:160px">
+            <input type="date" id="new-task-date">
+        </div>
+        <button class="btn-add-task" onclick="addTask()">➕ Ajouter</button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card"><div class="stat-value" style="color:#EF4444" id="stat-urgent-important">0</div><div class="stat-label">🔴 À faire</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#2563EB" id="stat-non-urgent-important">0</div><div class="stat-label">🔵 À planifier</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#F59E0B" id="stat-urgent-non-important">0</div><div class="stat-label">🟡 À déléguer</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#10B981" id="stat-non-urgent-non-important">0</div><div class="stat-label">🟢 Optionnel</div></div>
+    </div>
+
+    <div class="eisenhower-grid">
+        <div class="quadrant" id="quadrant-urgent-important" ondragover="event.preventDefault()" ondrop="dropTask(event, 'urgent-important')">
+            <div class="quadrant-header">
+                <div class="quadrant-icon" style="background:#FEF2F2">🔴</div>
+                <div><div class="quadrant-title">Urgent & Important</div><div class="quadrant-subtitle">Faire maintenant</div></div>
+                <span class="quadrant-count" id="count-urgent-important">0</span>
+            </div>
+            <div class="quadrant-tasks" id="tasks-urgent-important"></div>
+        </div>
+        <div class="quadrant" id="quadrant-non-urgent-important" ondragover="event.preventDefault()" ondrop="dropTask(event, 'non-urgent-important')">
+            <div class="quadrant-header">
+                <div class="quadrant-icon" style="background:#EFF6FF">🔵</div>
+                <div><div class="quadrant-title">Important, Pas Urgent</div><div class="quadrant-subtitle">Planifier</div></div>
+                <span class="quadrant-count" id="count-non-urgent-important">0</span>
+            </div>
+            <div class="quadrant-tasks" id="tasks-non-urgent-important"></div>
+        </div>
+        <div class="quadrant" id="quadrant-urgent-non-important" ondragover="event.preventDefault()" ondrop="dropTask(event, 'urgent-non-important')">
+            <div class="quadrant-header">
+                <div class="quadrant-icon" style="background:#FFFBEB">🟡</div>
+                <div><div class="quadrant-title">Urgent, Pas Important</div><div class="quadrant-subtitle">Déléguer si possible</div></div>
+                <span class="quadrant-count" id="count-urgent-non-important">0</span>
+            </div>
+            <div class="quadrant-tasks" id="tasks-urgent-non-important"></div>
+        </div>
+        <div class="quadrant" id="quadrant-non-urgent-non-important" ondragover="event.preventDefault()" ondrop="dropTask(event, 'non-urgent-non-important')">
+            <div class="quadrant-header">
+                <div class="quadrant-icon" style="background:#ECFDF5">🟢</div>
+                <div><div class="quadrant-title">Ni Urgent, Ni Important</div><div class="quadrant-subtitle">À faire plus tard</div></div>
+                <span class="quadrant-count" id="count-non-urgent-non-important">0</span>
+            </div>
+            <div class="quadrant-tasks" id="tasks-non-urgent-non-important"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let tasks = JSON.parse(localStorage.getItem('todolist-tasks') || '[]');
+    function saveTasks() { localStorage.setItem('todolist-tasks', JSON.stringify(tasks)); }
+
+    function addTask() {
+        const title = document.getElementById('new-task-title').value.trim();
+        const priority = document.getElementById('new-task-priority').value;
+        const date = document.getElementById('new-task-date').value;
+        if (!title) return;
+        tasks.push({ id: Date.now().toString(), title, priority, date, done: false });
+        document.getElementById('new-task-title').value = '';
+        document.getElementById('new-task-date').value = '';
+        saveTasks();
+        renderAll();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks();
+        renderAll();
+    }
+
+    function toggleDone(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.done = !task.done;
+            saveTasks();
+            renderAll();
+        }
+    }
+
+    function dragStart(e, id) {
+        e.dataTransfer.setData('text/plain', id);
+        e.target.classList.add('dragging');
+    }
+    function dragEnd(e) { e.target.classList.remove('dragging'); }
+    function dropTask(e, newPriority) {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.priority = newPriority;
+            saveTasks();
+            renderAll();
+        }
+    }
+
+    function renderAll() {
+        const priorities = ['urgent-important', 'non-urgent-important', 'urgent-non-important', 'non-urgent-non-important'];
+        const priorityColors = {
+            'urgent-important': 'urgent-important',
+            'non-urgent-important': 'non-urgent-important',
+            'urgent-non-important': 'urgent-non-important',
+            'non-urgent-non-important': 'non-urgent-non-important'
+        };
+        priorities.forEach(priority => {
+            const container = document.getElementById(`tasks-${priority}`);
+            const filtered = tasks.filter(t => t.priority === priority);
+            container.innerHTML = filtered.map(t => {
+                const dateDisplay = t.date ? new Date(t.date + 'T00:00:00').toLocaleDateString('fr-FR') : '';
+                return `<div class="task-card ${t.done ? 'done' : ''}" draggable="true" ondragstart="dragStart(event, '${t.id}')" ondragend="dragEnd(event)">
+                    <div class="task-priority ${priorityColors[priority]}"></div>
+                    <div class="task-checkbox" onclick="toggleDone('${t.id}')">${t.done ? '✓' : ''}</div>
+                    <div class="task-content">
+                        <div class="task-title">${escapeHtml(t.title)}</div>
+                        ${dateDisplay ? `<div class="task-date">📅 ${dateDisplay}</div>` : ''}
+                    </div>
+                    <button class="task-delete" onclick="deleteTask('${t.id}')" title="Supprimer">×</button>
+                </div>`;
+            }).join('');
+            document.getElementById(`count-${priority}`).textContent = filtered.length;
+        });
+        document.getElementById('stat-urgent-important').textContent = tasks.filter(t => t.priority === 'urgent-important' && !t.done).length;
+        document.getElementById('stat-non-urgent-important').textContent = tasks.filter(t => t.priority === 'non-urgent-important' && !t.done).length;
+        document.getElementById('stat-urgent-non-important').textContent = tasks.filter(t => t.priority === 'urgent-non-important' && !t.done).length;
+        document.getElementById('stat-non-urgent-non-important').textContent = tasks.filter(t => t.priority === 'non-urgent-non-important' && !t.done).length;
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    renderAll();
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

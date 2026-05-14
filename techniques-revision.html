@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techniques de Révision & IA - CalculEtudiant</title>
+    <meta name="description" content="Les meilleures méthodes de révision et des prompts IA prêts à copier pour chaque matière.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280; --text-muted: #9CA3AF;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Sélecteur de thème */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+
+        /* Technique cards */
+        .techniques-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .technique-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            box-shadow: var(--shadow); transition: all var(--transition); position: relative;
+            perspective: 1000px; height: 280px; cursor: pointer;
+        }
+        .technique-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .technique-card .front, .technique-card .back {
+            backface-visibility: hidden; transition: transform 0.6s; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            padding: 2rem; display: flex; flex-direction: column; justify-content: center; border-radius: var(--radius);
+        }
+        .technique-card .front {
+            background: var(--card); color: var(--text);
+        }
+        .technique-card .back {
+            background: var(--bg); color: var(--text); transform: rotateY(180deg);
+            border: 1px solid var(--border);
+        }
+        .technique-card.flipped .front { transform: rotateY(180deg); }
+        .technique-card.flipped .back { transform: rotateY(0deg); }
+        .technique-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .technique-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+        .technique-desc { font-size: 0.9rem; color: var(--text-light); line-height: 1.6; }
+        .back p { font-size: 0.95rem; color: var(--text); line-height: 1.7; }
+        .back a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .back a:hover { text-decoration: underline; }
+
+        .prompt-section { margin-top: 2rem; }
+        .prompt-category { margin-bottom: 2rem; }
+        .prompt-category h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .prompt-box {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 1.2rem; margin-bottom: 1rem; position: relative;
+        }
+        .prompt-box p { font-family: monospace; font-size: 0.9rem; color: var(--text); white-space: pre-wrap; background: var(--bg); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; }
+        .copy-btn {
+            position: absolute; top: 1.2rem; right: 1.2rem; background: var(--primary); color: #FFF; border: none;
+            padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s;
+        }
+        .copy-btn:hover { background: #e85d2c; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .tab { padding: 0.8rem 1.5rem; cursor: pointer; font-weight: 600; color: var(--text-light); border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap; }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        @media (max-width: 768px) {
+            .techniques-grid { grid-template-columns: 1fr; }
+            .technique-card { height: auto; min-height: 220px; }
+            .technique-card .front, .technique-card .back { position: relative; height: auto; min-height: inherit; }
+            .technique-card .back { display: none; transform: none; }
+            .technique-card.flipped .front { display: none; }
+            .technique-card.flipped .back { display: block; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🧪 Techniques de Révision & IA</h1>
+        <p>Explore des méthodes efficaces et utilise des prompts IA prêts à l'emploi</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('techniques', this)">📖 Techniques de révision</div>
+        <div class="tab" onclick="switchTab('prompts', this)">🤖 Prompts IA par matière</div>
+    </div>
+
+    <!-- TAB TECHNIQUES -->
+    <div id="tab-techniques" class="tab-content active">
+        <div class="techniques-grid">
+            <!-- Technique 1 : Pomodoro -->
+            <div class="technique-card animate-on-scroll" onclick="flipCard(event, this)">
+                <div class="front">
+                    <div class="technique-icon">🍅</div>
+                    <div class="technique-name">Méthode Pomodoro</div>
+                    <div class="technique-desc">Travail intense de 25 min suivi de 5 min de pause. Idéal pour rester concentré.</div>
+                </div>
+                <div class="back">
+                    <p>Cycle recommandé : 4 sessions de 25 min, puis pause longue de 15-30 min. Utilise le <a href="pomodoro.html" onclick="event.stopPropagation()">timer Pomodoro</a> intégré.</p>
+                </div>
+            </div>
+            <!-- Technique 2 : Répétition espacée -->
+            <div class="technique-card animate-on-scroll" onclick="flipCard(event, this)">
+                <div class="front">
+                    <div class="technique-icon">🔄</div>
+                    <div class="technique-name">Répétition espacée</div>
+                    <div class="technique-desc">Révise juste avant d'oublier. Utilise des outils comme Anki pour mémoriser sur le long terme.</div>
+                </div>
+                <div class="back">
+                    <p>Exemple de calendrier : J1, J3, J7, J14, J30. Adapte la fréquence selon ta maîtrise du sujet.</p>
+                </div>
+            </div>
+            <!-- Technique 3 : Méthode Feynman -->
+            <div class="technique-card animate-on-scroll" onclick="flipCard(event, this)">
+                <div class="front">
+                    <div class="technique-icon">🧑‍🏫</div>
+                    <div class="technique-name">Méthode Feynman</div>
+                    <div class="technique-desc">Explique le concept simplement, comme à un enfant. Si tu bloques, c'est que tu n'as pas assez compris.</div>
+                </div>
+                <div class="back">
+                    <p>Écris ce que tu sais, identifie les lacunes, retourne à la source, puis simplifie encore.</p>
+                </div>
+            </div>
+            <!-- Technique 4 : Mind Mapping -->
+            <div class="technique-card animate-on-scroll" onclick="flipCard(event, this)">
+                <div class="front">
+                    <div class="technique-icon">🧠</div>
+                    <div class="technique-name">Mind Mapping</div>
+                    <div class="technique-desc">Organise tes idées en schéma arborescent pour mieux visualiser les liens.</div>
+                </div>
+                <div class="back">
+                    <p>Outils gratuits : XMind, FreeMind, ou tout simplement une feuille et des crayons de couleur.</p>
+                </div>
+            </div>
+            <!-- Technique 5 : SQ3R -->
+            <div class="technique-card animate-on-scroll" onclick="flipCard(event, this)">
+                <div class="front">
+                    <div class="technique-icon">📖</div>
+                    <div class="technique-name">Méthode SQ3R</div>
+                    <div class="technique-desc">Survol, Questionne, Lis, Récite, Révise. Parfaite pour les cours volumineux.</div>
+                </div>
+                <div class="back">
+                    <p>1. Survey (survol) 2. Question (transforme les titres en questions) 3. Read (lis activement) 4. Recite (résume) 5. Review (révise régulièrement)</p>
+                </div>
+            </div>
+            <!-- Technique 6 : Palais mental -->
+            <div class="technique-card animate-on-scroll" onclick="flipCard(event, this)">
+                <div class="front">
+                    <div class="technique-icon">🏰</div>
+                    <div class="technique-name">Palais mental</div>
+                    <div class="technique-desc">Associe chaque information à un lieu familier pour une mémorisation visuelle.</div>
+                </div>
+                <div class="back">
+                    <p>Visualise un trajet connu et place les concepts à retenir le long du chemin. Plus l'image est absurde, mieux c'est retenu !</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB PROMPTS IA -->
+    <div id="tab-prompts" class="tab-content">
+        <div class="prompt-section">
+            <div class="prompt-category">
+                <h3>📐 Mathématiques / Sciences exactes</h3>
+                <div class="prompt-box">
+                    <p>Agis comme un professeur de mathématiques. Explique-moi le théorème de Pythagore avec des exemples concrets et des exercices progressifs.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+                <div class="prompt-box">
+                    <p>Je dois résoudre une équation différentielle du second ordre. Peux-tu me guider étape par étape sans me donner la solution finale ?</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+            </div>
+            <div class="prompt-category">
+                <h3>🔬 Sciences expérimentales</h3>
+                <div class="prompt-box">
+                    <p>Explique-moi le cycle de Krebs de manière simplifiée, puis donne des moyens mnémotechniques pour le retenir.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+                <div class="prompt-box">
+                    <p>Je prépare un TP de chimie sur les titrages. Peux-tu me faire une checklist des erreurs courantes et des points de sécurité ?</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+            </div>
+            <div class="prompt-category">
+                <h3>📖 Littérature / Philosophie</h3>
+                <div class="prompt-box">
+                    <p>Rédige une dissertation sur "Le rôle de la mémoire dans À la recherche du temps perdu de Proust" en trois parties.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+                <div class="prompt-box">
+                    <p>Explique la notion de "cogito" chez Descartes comme si je n'avais jamais fait de philosophie.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+            </div>
+            <div class="prompt-category">
+                <h3>🎨 Arts / Design</h3>
+                <div class="prompt-box">
+                    <p>Fais une analyse iconographique du tableau "Les Demoiselles d'Avignon" de Picasso en mettant en lumière le cubisme.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+            </div>
+            <div class="prompt-category">
+                <h3>💻 Informatique / Programmation</h3>
+                <div class="prompt-box">
+                    <p>Explique la différence entre une pile et une file en structure de données avec des exemples en Python.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+            </div>
+            <div class="prompt-category">
+                <h3>🌍 Langues vivantes</h3>
+                <div class="prompt-box">
+                    <p>Joue le rôle d'un natif anglais et corrige mes phrases. Je te donne une phrase en anglais, tu me renvoies la version corrigée avec explications.</p>
+                    <button class="copy-btn" onclick="copyPrompt(this)">Copier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bannière ancrée discrète -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+
+<script>
+    // Flip card (empêche le flip si on clique sur un lien)
+    function flipCard(event, card) {
+        if (event.target.closest('a')) return; // ne pas retourner si on clique sur un lien
+        card.classList.toggle('flipped');
+    }
+
+    // Gestion des onglets
+    function switchTab(tabName, btn) {
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // Animation au scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+    // Copie des prompts
+    function copyPrompt(btn) {
+        const promptBox = btn.parentElement;
+        const text = promptBox.querySelector('p').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = 'Copié !';
+            btn.style.background = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = 'Copier';
+                btn.style.background = 'var(--primary)';
+            }, 2000);
+        });
+    }
+
+    // Activer l'onglet par défaut
+    document.querySelector('.tab.active').click();
+</script>
+</body>
+</html>

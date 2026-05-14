@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparateur Logement Étudiant - CalculEtudiant</title>
+    <meta name="description" content="Compare les meilleures options de logement étudiant : résidence CROUS, colocation, studio privé. Checklist et liens utiles.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Sélecteur de thème */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Mise en page */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+        .section-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .slider-group { margin-bottom: 1rem; }
+        .slider-group label { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.3rem; }
+        .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .slider-value { font-weight: 700; color: var(--primary); }
+
+        .ville-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .ville-btn {
+            background: var(--bg); border: 2px solid var(--border); padding: 0.5rem 1rem;
+            border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all var(--transition);
+        }
+        .ville-btn:hover, .ville-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        .type-grid { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .type-btn {
+            flex: 1; background: var(--bg); border: 2px solid var(--border); padding: 0.7rem;
+            border-radius: var(--radius-sm); cursor: pointer; text-align: center; font-weight: 600; font-size: 0.85rem; transition: all var(--transition);
+        }
+        .type-btn:hover, .type-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        .result-box {
+            background: var(--primary-light); border-radius: var(--radius-sm); padding: 1.5rem; text-align: center; margin-top: 1rem;
+        }
+        .result-price { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .result-label { font-size: 0.9rem; color: var(--text-light); }
+
+        .checklist { margin-top: 1.5rem; }
+        .checklist-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+        .checklist-item input[type="checkbox"] { accent-color: var(--success); width: 18px; height: 18px; cursor: pointer; }
+        .checklist-item.checked span { text-decoration: line-through; color: var(--text-muted); }
+
+        .partner-links { margin-top: 2rem; }
+        .partner-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem;
+            margin-bottom: 0.8rem; display: flex; align-items: center; gap: 1rem; transition: all var(--transition);
+        }
+        .partner-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .partner-icon { font-size: 2rem; }
+        .partner-name { font-weight: 700; }
+        .partner-desc { font-size: 0.85rem; color: var(--text-light); }
+        .partner-link {
+            margin-left: auto; background: var(--primary); color: #FFF; padding: 0.5rem 1rem;
+            border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.85rem; white-space: nowrap;
+        }
+        .partner-link:hover { background: #e85d2c; }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .type-grid { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🏠 Comparateur Logement Étudiant</h1>
+        <p>Trouve le logement idéal : résidence CROUS, colocation ou studio privé</p>
+    </div>
+
+    <div class="main-grid">
+        <div class="card">
+            <h2 class="section-title">📍 Ta recherche</h2>
+            <p style="font-weight:600;font-size:0.85rem;color:var(--text-light);margin-bottom:0.5rem">🏙️ Ville</p>
+            <div class="ville-grid" id="ville-grid">
+                <button class="ville-btn active" data-ville="paris" onclick="selectVille(this)">Paris</button>
+                <button class="ville-btn" data-ville="lyon" onclick="selectVille(this)">Lyon</button>
+                <button class="ville-btn" data-ville="marseille" onclick="selectVille(this)">Marseille</button>
+                <button class="ville-btn" data-ville="lille" onclick="selectVille(this)">Lille</button>
+                <button class="ville-btn" data-ville="bordeaux" onclick="selectVille(this)">Bordeaux</button>
+                <button class="ville-btn" data-ville="toulouse" onclick="selectVille(this)">Toulouse</button>
+            </div>
+
+            <div class="slider-group">
+                <label>💰 Budget max mensuel <span class="slider-value" id="budget-value">500 €</span></label>
+                <input type="range" id="budget" min="200" max="1000" value="500" step="10" oninput="updateComparateur()">
+            </div>
+
+            <p style="font-weight:600;font-size:0.85rem;color:var(--text-light);margin-bottom:0.5rem">🏠 Type de logement</p>
+            <div class="type-grid" id="type-grid">
+                <button class="type-btn active" data-type="crous" onclick="selectType(this)">🏢 CROUS</button>
+                <button class="type-btn" data-type="coloc" onclick="selectType(this)">👥 Colocation</button>
+                <button class="type-btn" data-type="studio" onclick="selectType(this)">🏠 Studio privé</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">💰 Estimation</h2>
+            <div id="result-container">
+                <div class="result-box">
+                    <div class="result-price" id="prix-estime">350 €</div>
+                    <div class="result-label">Loyer moyen estimé / mois</div>
+                </div>
+                <div style="margin-top:1rem" id="compatibilite"></div>
+            </div>
+
+            <div class="checklist" style="margin-top:1.5rem">
+                <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.5rem">📋 Checklist logement</h3>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Pièce d'identité</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Justificatif de scolarité</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Garant / caution</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>RIB pour le virement</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Attestation d'assurance habitation</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partenaires -->
+    <div class="partner-links">
+        <h2 class="section-title">🤝 Plateformes de logement étudiant</h2>
+        <div class="partner-card">
+            <div class="partner-icon">🏢</div>
+            <div>
+                <div class="partner-name">Studapart</div>
+                <div class="partner-desc">Résidences étudiantes partout en France, sans garant.</div>
+            </div>
+            <a href="https://www.studapart.com?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+        <div class="partner-card">
+            <div class="partner-icon">🎓</div>
+            <div>
+                <div class="partner-name">Nexity Studéa</div>
+                <div class="partner-desc">Résidences étudiantes avec services inclus (Internet, laverie).</div>
+            </div>
+            <a href="https://www.nexity-studea.com?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+        <div class="partner-card">
+            <div class="partner-icon">👥</div>
+            <div>
+                <div class="partner-name">La Carte des Colocs</div>
+                <div class="partner-desc">Trouve une colocation facilement, par affinités.</div>
+            </div>
+            <a href="https://www.lacartedescolocs.fr?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+        <div class="partner-card">
+            <div class="partner-icon">🏠</div>
+            <div>
+                <div class="partner-name">Roomlala</div>
+                <div class="partner-desc">Location de chambres chez l'habitant, sans frais d'agence.</div>
+            </div>
+            <a href="https://www.roomlala.com?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bannière ancrée -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+
+<script>
+    // Données des villes et prix selon type de logement
+    const villes = {
+        paris: { crous: 350, coloc: 600, studio: 800 },
+        lyon: { crous: 250, coloc: 420, studio: 500 },
+        marseille: { crous: 230, coloc: 380, studio: 450 },
+        lille: { crous: 200, coloc: 350, studio: 480 },
+        bordeaux: { crous: 250, coloc: 400, studio: 520 },
+        toulouse: { crous: 220, coloc: 350, studio: 470 }
+    };
+
+    let currentVille = 'paris';
+    let currentType = 'crous';
+
+    function selectVille(btn) {
+        document.querySelectorAll('.ville-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentVille = btn.dataset.ville;
+        updateComparateur();
+    }
+
+    function selectType(btn) {
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentType = btn.dataset.type;
+        updateComparateur();
+    }
+
+    function updateComparateur() {
+        const budget = parseInt(document.getElementById('budget').value);
+        document.getElementById('budget-value').textContent = budget + ' €';
+
+        const prix = villes[currentVille][currentType];
+        document.getElementById('prix-estime').textContent = prix + ' €';
+
+        const compatDiv = document.getElementById('compatibilite');
+        if (prix <= budget) {
+            compatDiv.innerHTML = `<div style="color:var(--success);font-weight:600">✅ Ce type de logement est dans ton budget !</div>`;
+        } else {
+            compatDiv.innerHTML = `<div style="color:var(--danger);font-weight:600">⚠️ Ce logement dépasse ton budget de ${prix - budget} €. Essaie un autre type ou augmente ton budget.</div>`;
+        }
+
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    updateComparateur();
+</script>
+</body>
+</html>

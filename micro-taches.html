@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gagner de l'argent étudiant - CalculEtudiant</title>
+    <meta name="description" content="Les meilleures plateformes pour gagner de l'argent de poche : Freecash, JumpTask, PrizeRebel. Inscris-toi via nos liens et reçois des bonus.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        .money-page {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hero-money {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .hero-money h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.2rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin: 2rem 0;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .comparison-table th {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .comparison-table tr:hover td {
+            background: var(--bg);
+        }
+        .btn-ref {
+            display: inline-block;
+            background: var(--primary);
+            color: #FFF;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .btn-ref:hover {
+            background: var(--primaryHover);
+            transform: translateY(-2px);
+        }
+        .warning-box {
+            background: #FFFBEB;
+            border-left: 4px solid #F59E0B;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            margin: 1rem 0;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 2rem;
+        }
+
+        /* Styles pour la barre XP (identiques à l'index) */
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Styles du sélecteur de thème (menu déroulant) - AJOUTÉS */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        @media (max-width: 768px) {
+            .comparison-table th, .comparison-table td {
+                padding: 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <!-- Le sélecteur de thème -->
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu">
+                    <div class="theme-grid" id="themeGrid"></div>
+                </div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container money-page">
+    <div class="hero-money">
+        <h1>💰 Gagner de l'argent de poche</h1>
+        <p>Tu es étudiant ? Voici les meilleures plateformes pour te faire un peu d'argent facilement, sans risque.</p>
+    </div>
+
+    <div class="warning-box">
+        ⚠️ <strong>Petit rappel :</strong> Ces sites ne te rendront pas riche, mais ils peuvent te payer un cinéma, un Uber, ou quelques courses. C'est de l'argent de poche, pas un salaire.
+    </div>
+
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Plateforme</th>
+                <th>Activités</th>
+                <th>Gains estimés</th>
+                <th>💰 Lien d'inscription</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>🎮 Freecash</strong></td>
+                <td>Jeux, tests d'applis, sondages</td>
+                <td>Jusqu'à 5€/h selon offres</td>
+                <td><a href="https://freecash.com/r/39d077dcaaf1617a87d7" class="btn-ref" target="_blank" rel="nofollow">👉 Rejoindre Freecash</a></td>
+            </tr>
+            <tr>
+                <td><strong>⚡ JumpTask</strong></td>
+                <td>Micro-tâches, vidéos, téléchargements, sondages</td>
+                <td>En cryptomonnaie (JMPT), seuil de retrait très bas (0.5 JMPT)</td>
+                <td><a href="https://www.jumptask.io/r/kurucemogiwe" class="btn-ref" target="_blank" rel="nofollow">👉 Rejoindre JumpTask</a></td>
+            </tr>
+            <tr>
+                <td><strong>🏆 PrizeRebel</strong></td>
+                <td>Sondages, offres, tâches</td>
+                <td>Réputation solide, paiements rapides</td>
+                <td><a href="https://www.prizerebel.com/index.php?r=16597011" class="btn-ref" target="_blank" rel="nofollow">👉 Rejoindre PrizeRebel</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="warning-box">
+        💡 <strong>Conseil :</strong> Pour maximiser tes gains, commence par Freecash (le plus simple et rapide), puis explore les autres plateformes selon tes préférences.
+    </div>
+
+    <div class="footer-note">
+        ℹ️ Les liens ci-dessus sont des liens de parrainage. Cela nous permet de toucher une petite commission qui nous aide à maintenir le site, sans frais supplémentaires pour toi. Merci de nous soutenir !
+    </div>
+</div>
+
+<!-- Bannière ancrée discrète (fixe en bas de l'écran) -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<!-- Script d'initialisation du sélecteur de thème (AJOUTÉ) -->
+
+
+<script src="adsense-check.js"></script>
+</body>
+</html>

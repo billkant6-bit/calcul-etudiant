@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Bourse - CalculEtudiant</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="description" content="Simule ta bourse CROUS avec les barèmes 2024, visualise tes aides et prépare ton dossier.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        .slider-group { margin-bottom: 1.5rem; }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.4rem;
+        }
+        .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .slider-value { font-weight: 700; color: var(--primary); }
+
+        .echelon-gauge {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .echelon-step {
+            flex: 1;
+            min-width: 35px;
+            height: 14px;
+            border-radius: 7px;
+            background: var(--border);
+            transition: all 0.5s ease;
+        }
+        .echelon-step.active { background: var(--primary); }
+        .echelon-step.current {
+            background: var(--primary);
+            box-shadow: 0 0 16px rgba(var(--primaryRGB),0.6);
+            transform: scaleY(1.6);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 8px rgba(var(--primaryRGB),0.4); } 50% { box-shadow: 0 0 20px rgba(var(--primaryRGB),0.8); } }
+
+        .aides-donut { position: relative; width: 180px; height: 180px; margin: 0 auto; }
+        .aides-donut svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .aides-donut .segment { transition: all 0.8s ease; }
+        .aides-total {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .aides-montant { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; animation: countIn 0.6s ease-out; }
+        @keyframes countIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        .aides-periode { font-size: 0.7rem; color: var(--text-light); }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .checklist-item input[type="checkbox"] { accent-color: var(--success); width: 18px; height: 18px; cursor: pointer; }
+        .checklist-item.checked span { text-decoration: line-through; color: var(--text-light); }
+
+        .timeline { display: flex; gap: 0; margin: 1.5rem 0; position: relative; }
+        .timeline::before { content: ''; position: absolute; top: 16px; left: 0; right: 0; height: 3px; background: var(--border); z-index: 0; }
+        .timeline-step { flex: 1; text-align: center; position: relative; z-index: 1; }
+        .timeline-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 3px solid var(--border);
+            margin: 0 auto 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all var(--transition);
+        }
+        .timeline-step.active .timeline-dot { background: var(--primary); border-color: var(--primary); color: #FFF; }
+        .timeline-step.done .timeline-dot { background: var(--success); border-color: var(--success); color: #FFF; }
+        .timeline-label { font-size: 0.75rem; color: var(--text-light); }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>💰 Simulateur de Bourse</h1>
+        <p>Estime ta bourse CROUS, visualise tes aides et prépare ton dossier</p>
+    </div>
+
+    <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+        <div class="card">
+            <h2 class="section-title">📋 Ta situation</h2>
+            <div class="slider-group">
+                <label>Revenus annuels des parents <span class="slider-value" id="val-revenus">45 000 €</span></label>
+                <input type="range" id="revenus" min="0" max="120000" value="45000" step="1000" oninput="updateAll()">
+            </div>
+            <div class="slider-group">
+                <label>Nombre d'enfants à charge <span class="slider-value" id="val-enfants">2</span></label>
+                <input type="range" id="enfants" min="1" max="6" value="2" oninput="updateAll()">
+            </div>
+            <div class="slider-group">
+                <label>Distance domicile-études <span class="slider-value" id="val-distance">150 km</span></label>
+                <input type="range" id="distance" min="0" max="500" value="150" step="10" oninput="updateAll()">
+            </div>
+            <div class="input-group"><label>🏠 Situation de logement</label><select id="logement" onchange="updateAll()"><option value="parents">Chez les parents</option><option value="independant" selected>Logement indépendant</option><option value="crous">Résidence CROUS</option></select></div>
+            <div class="input-group"><label>🎓 Niveau d'études</label><select id="niveau" onchange="updateAll()"><option value="licence" selected>Licence</option><option value="master">Master</option><option value="doctorat">Doctorat</option></select></div>
+
+            <p style="font-weight:600;font-size:0.85rem;color:var(--text-light);margin-top:1.5rem">🎯 Échelon estimé</p>
+            <div class="echelon-gauge" id="echelon-gauge">
+                <div class="echelon-step"></div><div class="echelon-step"></div><div class="echelon-step"></div>
+                <div class="echelon-step"></div><div class="echelon-step"></div><div class="echelon-step"></div>
+                <div class="echelon-step"></div><div class="echelon-step"></div><div class="echelon-step"></div>
+            </div>
+            <div style="text-align:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem" id="echelon-label">—</div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">📊 Estimation des aides</h2>
+            <div class="aides-donut">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" stroke-width="12"/>
+                    <circle class="segment" id="seg-bourse" cx="50" cy="50" r="38" fill="none" stroke="var(--primary)" stroke-width="12" stroke-dasharray="0 239" stroke-linecap="round"/>
+                    <circle class="segment" id="seg-apl" cx="50" cy="50" r="38" fill="none" stroke="var(--accent)" stroke-width="12" stroke-dasharray="0 239" stroke-linecap="round" transform="rotate(0)"/>
+                </svg>
+                <div class="aides-total">
+                    <div class="aides-montant" id="total-aides" style="color:var(--primary)">0 €</div>
+                    <div class="aides-periode">par mois</div>
+                </div>
+            </div>
+
+            <div id="detail-aides"></div>
+
+            <div class="checklist">
+                <p style="font-weight:600;margin-bottom:0.5rem">📝 Documents à préparer</p>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Avis d'imposition des parents</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Justificatif de domicile</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>RIB pour le virement</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Certificat de scolarité</span></div>
+                <div class="checklist-item" onclick="this.classList.toggle('checked')"><input type="checkbox"><span>Attestation de bourse (renouvellement)</span></div>
+            </div>
+
+            <p style="font-weight:600;margin-top:1.5rem">📅 Étapes de la demande</p>
+            <div class="timeline">
+                <div class="timeline-step active"><div class="timeline-dot">1</div><div class="timeline-label">Simulation</div></div>
+                <div class="timeline-step"><div class="timeline-dot">2</div><div class="timeline-label">Dossier en ligne</div></div>
+                <div class="timeline-step"><div class="timeline-dot">3</div><div class="timeline-label">Validation</div></div>
+                <div class="timeline-step"><div class="timeline-dot">4</div><div class="timeline-label">Versement</div></div>
+            </div>
+
+            <a href="https://www.messervices.etudiant.gouv.fr" target="_blank" class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-top:1rem">
+                🔗 Faire ma demande sur messervices.etudiant.gouv.fr
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Bannière ancrée discrète (fixe en bas de l'écran) -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning de Révisions - CalculEtudiant</title>
+    <meta name="description" content="Crée ton planning de révisions personnalisé avec drag & drop, vue calendrier et suggestions IA.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        .planning-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+        .sidebar {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            box-shadow: var(--shadow);
+        }
+        .matiere-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            cursor: grab;
+            transition: all var(--transition);
+            border: 1px solid transparent;
+            background: var(--bg);
+            user-select: none;
+        }
+        .matiere-item:hover {
+            border-color: var(--border);
+            background: var(--card);
+            box-shadow: var(--shadow);
+        }
+        .matiere-item:active { cursor: grabbing; opacity: 0.7; }
+        .matiere-color {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .matiere-color.maths { background: #FF6B35; }
+        .matiere-color.physique { background: #2563EB; }
+        .matiere-color.info { background: #7C3AED; }
+        .matiere-color.langues { background: #10B981; }
+        .matiere-color.bio { background: #F59E0B; }
+        .matiere-color.autres { background: #6B7280; }
+        .matiere-name { font-weight: 600; font-size: 0.9rem; flex: 1; }
+        .matiere-hours { font-size: 0.8rem; color: var(--text-light); background: var(--border); padding: 0.2rem 0.6rem; border-radius: 50px; }
+        .btn-add-matiere {
+            width: 100%;
+            background: transparent;
+            border: 2px dashed var(--border);
+            padding: 0.7rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            color: var(--primary);
+            margin-top: 0.8rem;
+        }
+        .btn-add-matiere:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        .calendar-nav button {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all var(--transition);
+        }
+        .calendar-nav button:hover { border-color: var(--primary); color: var(--primary); }
+        .calendar-week-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; min-width: 200px; text-align: center; }
+        .btn-export {
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(var(--primaryRGB),0.2);
+        }
+        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(var(--primaryRGB),0.3); }
+        .timeline { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .day-columns { display: grid; grid-template-columns: repeat(7, 1fr); min-height: 600px; }
+        .day-column { border-right: 1px solid var(--border); position: relative; }
+        .day-column:last-child { border-right: none; }
+        .day-column.today { background: var(--primary-light); }
+        .day-header { padding: 0.8rem; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .day-header .day-name { display: block; margin-bottom: 0.2rem; }
+        .day-header .day-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; font-weight: 700; color: var(--text); }
+        .day-column.today .day-number { background: var(--primary); color: #FFF; }
+        .day-slots { padding: 0.4rem; min-height: 500px; }
+        .time-slot { height: 60px; border-bottom: 1px solid rgba(0,0,0,0.03); position: relative; font-size: 0.7rem; color: var(--text-muted); padding: 0.2rem 0.4rem; transition: all var(--transition); }
+        .time-slot.drag-over { background: var(--primary-light); border: 2px dashed var(--primary); border-radius: var(--radius-sm); }
+        .session-block {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            border-radius: 8px;
+            padding: 0.4rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #FFF;
+            cursor: pointer;
+            z-index: 2;
+            transition: all var(--transition);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .session-block:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 5; }
+        .session-block.maths { background: #FF6B35; }
+        .session-block.physique { background: #2563EB; }
+        .session-block.info { background: #7C3AED; }
+        .session-block.langues { background: #10B981; }
+        .session-block.bio { background: #F59E0B; }
+        .session-block.autres { background: #6B7280; }
+        .delete-session {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: #FFF;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.6rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .session-block:hover .delete-session { display: flex; }
+        .ai-panel {
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, #FFF5F0, #FFF0E8);
+            border: 1px solid rgba(var(--primaryRGB),0.2);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            display: none;
+        }
+        .ai-panel.show { display: block; animation: fadeInUp 0.5s ease-out; }
+        .ai-panel h4 { font-family: 'Syne', sans-serif; font-size: 0.95rem; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .ai-panel p { font-size: 0.85rem; color: var(--text-light); line-height: 1.6; }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal h3 { font-family: 'Syne', sans-serif; margin-bottom: 1.2rem; color: var(--text); }
+        .modal .input-group { margin-bottom: 1rem; }
+        .modal .btn-primary { width: 100%; margin-top: 0.5rem; }
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 900px) {
+            .planning-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .day-columns { grid-template-columns: repeat(4, 1fr); overflow-x: auto; }
+        }
+        @media (max-width: 600px) {
+            .day-columns { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>📅 Planning de Révisions</h1>
+        <p>Glisse-dépose tes matières sur le calendrier pour créer ton planning personnalisé</p>
+    </div>
+
+    <div class="planning-layout">
+        <div>
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button onclick="changeWeek(-1)">← Semaine préc.</button>
+                    <span class="calendar-week-label" id="week-label">Semaine du ...</span>
+                    <button onclick="changeWeek(1)">Semaine suiv. →</button>
+                </div>
+                <button class="btn-export" onclick="exportPlanning()">📥 Exporter PDF</button>
+            </div>
+            <div class="timeline">
+                <div class="day-columns" id="day-columns"></div>
+            </div>
+        </div>
+        <div class="sidebar">
+            <h3>📚 Mes Matières</h3>
+            <div id="matieres-list"></div>
+            <button class="btn-add-matiere" onclick="openAddModal()">➕ Ajouter une matière</button>
+            <div class="ai-panel" id="ai-panel"><h4>🤖 Suggestion IA</h4><p id="ai-text"></p></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-add">
+    <div class="modal">
+        <h3>➕ Nouvelle matière</h3>
+        <div class="input-group"><label>Nom</label><input type="text" id="new-matiere-name" placeholder="ex: Chimie"></div>
+        <div class="input-group"><label>Couleur</label><select id="new-matiere-color"><option value="maths">🟠 Orange</option><option value="physique">🔵 Bleu</option><option value="info">🟣 Violet</option><option value="langues">🟢 Vert</option><option value="bio">🟡 Jaune</option><option value="autres">⚫ Gris</option></select></div>
+        <div class="input-group"><label>Heures/semaine</label><input type="number" id="new-matiere-hours" value="3" min="1" max="20"></div>
+        <button class="btn-primary" onclick="addMatiere()">✅ Ajouter</button>
+        <button class="btn-add-matiere" style="margin-top:0.5rem" onclick="closeModal()">Annuler</button>
+    </div>
+</div>
+
+<script>
+    const GEMINI_KEY = (() => { const k = 'QUl6YVN5REN5a0gyOEt' + 'sNDBQdWhGZU44RXhPTldj' + 'S3FEQVNIZkVn'; return atob(k); })();
+    let currentWeekOffset = 0;
+    let sessions = JSON.parse(localStorage.getItem('planning-sessions') || '[]');
+
+    function getWeekDates(offset) {
+        const now = new Date();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - now.getDay() + 1 + offset * 7);
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            days.push(d);
+        }
+        return days;
+    }
+
+    function renderCalendar() {
+        const days = getWeekDates(currentWeekOffset);
+        const container = document.getElementById('day-columns');
+        const today = new Date().toDateString();
+        const dayNames = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('week-label').textContent = 'Semaine du ' + days[0].toLocaleDateString('fr-FR', options);
+
+        let html = '';
+        days.forEach(day => {
+            const dateStr = day.toISOString().split('T')[0];
+            const isToday = day.toDateString() === today;
+            html += `<div class="day-column ${isToday ? 'today' : ''}" data-date="${dateStr}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">`;
+            html += `<div class="day-header"><span class="day-name">${dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}</span><span class="day-number">${day.getDate()}</span></div>`;
+            html += `<div class="day-slots">`;
+            for (let h = 8; h <= 20; h++) {
+                html += `<div class="time-slot" data-hour="${h}" data-date="${dateStr}" ondragover="handleSlotDragOver(event)" ondragleave="handleSlotDragLeave(event)" ondrop="handleSlotDrop(event)">${h}h</div>`;
+            }
+            html += `</div></div>`;
+        });
+        container.innerHTML = html;
+
+        days.forEach(day => {
+            const dateStr = day.toISOString().split('T')[0];
+            const daySessions = sessions.filter(s => s.date === dateStr);
+            const dayColumn = container.querySelector(`[data-date="${dateStr}"]`);
+            if (dayColumn) {
+                daySessions.forEach(s => {
+                    const sessionEl = document.createElement('div');
+                    sessionEl.className = `session-block ${s.couleur}`;
+                    sessionEl.style.position = 'relative';
+                    sessionEl.style.marginBottom = '2px';
+                    sessionEl.innerHTML = `${s.matiere}<button class="delete-session" onclick="deleteSession('${s.id}')">×</button>`;
+                    sessionEl.title = `${s.matiere} - ${s.hour}h`;
+                    const slots = dayColumn.querySelectorAll('.time-slot');
+                    const slotIndex = s.hour - 8;
+                    if (slots[slotIndex]) slots[slotIndex].appendChild(sessionEl);
+                });
+            }
+        });
+    }
+
+    function handleDragOver(e) { e.preventDefault(); e.currentTarget.style.background = 'rgba(var(--primaryRGB),0.05)'; }
+    function handleDragLeave(e) { e.currentTarget.style.background = ''; }
+    function handleSlotDragOver(e) { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('drag-over'); }
+    function handleSlotDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+    function handleDragStart(e) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            matiere: e.target.dataset.matiere,
+            couleur: e.target.dataset.couleur,
+            heures: e.target.dataset.heures
+        }));
+        e.target.classList.add('dragging');
+    }
+    function handleDragEnd(e) { e.target.classList.remove('dragging'); }
+    function handleDrop(e) { e.preventDefault(); }
+    function handleSlotDrop(e) {
+        e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag-over');
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const hour = parseInt(e.currentTarget.dataset.hour);
+        const date = e.currentTarget.dataset.date;
+        const conflict = sessions.find(s => s.date === date && s.hour === hour);
+        if (conflict) { alert(`⚠️ Créneau déjà occupé par ${conflict.matiere} !`); return; }
+        const session = { id: Date.now().toString(), matiere: data.matiere, couleur: data.couleur, date: date, hour: hour };
+        sessions.push(session);
+        localStorage.setItem('planning-sessions', JSON.stringify(sessions));
+        renderCalendar();
+        getAISuggestion();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+    function deleteSession(id) {
+        sessions = sessions.filter(s => s.id !== id);
+        localStorage.setItem('planning-sessions', JSON.stringify(sessions));
+        renderCalendar();
+    }
+    function openAddModal() { document.getElementById('modal-add').classList.add('active'); }
+    function closeModal() { document.getElementById('modal-add').classList.remove('active'); }
+    function addMatiere() {
+        const name = document.getElementById('new-matiere-name').value.trim();
+        const color = document.getElementById('new-matiere-color').value;
+        const hours = document.getElementById('new-matiere-hours').value;
+        if (!name) return;
+        const list = document.getElementById('matieres-list');
+        const item = document.createElement('div');
+        item.className = 'matiere-item';
+        item.draggable = true;
+        item.dataset.matiere = name;
+        item.dataset.couleur = color;
+        item.dataset.heures = hours;
+        item.innerHTML = `<div class="matiere-color ${color}"></div><span class="matiere-name">${name}</span><span class="matiere-hours">${hours}h</span>`;
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        list.appendChild(item);
+        closeModal();
+        document.getElementById('new-matiere-name').value = '';
+        document.getElementById('new-matiere-hours').value = '3';
+    }
+    async function getAISuggestion() {
+        const matieresList = Array.from(document.querySelectorAll('.matiere-item')).map(el => `${el.dataset.matiere} (${el.dataset.heures}h)`);
+        if (matieresList.length === 0) return;
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Tu es un coach d'organisation étudiante. Voici les matières à réviser : ${matieresList.join(', ')}. Donne UN conseil court (2 phrases) pour organiser ces révisions efficacement sur une semaine.` }] }] })
+            });
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Alterne les matières difficiles et faciles pour garder la motivation !";
+            document.getElementById('ai-text').textContent = text;
+            document.getElementById('ai-panel').classList.add('show');
+        } catch(e) {
+            document.getElementById('ai-text').textContent = "💡 Conseil : Révise les matières difficiles le matin (meilleure concentration) et garde les plus simples pour l'après-midi.";
+            document.getElementById('ai-panel').classList.add('show');
+        }
+    }
+    function changeWeek(offset) { currentWeekOffset += offset; renderCalendar(); }
+    function exportPlanning() { window.print(); }
+
+    document.querySelectorAll('.matiere-item').forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+    });
+    renderCalendar();
+    getAISuggestion();
+    document.getElementById('modal-add').addEventListener('click', e => { if (e.target === document.getElementById('modal-add')) closeModal(); });
+</script>
+
+<!-- Bannière ancrée discrète (fixe en bas de l'écran) -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+<script src="save-manager.js"></script>
+</body>
+</html>

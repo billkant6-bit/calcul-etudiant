@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECTS + Simulateur Erasmus - CalculEtudiant</title>
+    <meta name="description" content="Convertis tes crédits ECTS, suis ta progression et simule ton budget Erasmus.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .ects-timeline {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .ects-block {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+        .ects-block.acquired { background: var(--success); }
+        .ects-block.in-progress { background: var(--warning); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .progress-bar {
+            height: 18px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+        .country-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .country-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+        .country-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .erasmus-budget {
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .erasmus-budget .big-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .ects-block { width: 22px; height: 22px; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🔄 ECTS + Erasmus</h1>
+        <p>Convertis tes crédits, suis ta progression et simule ton Erasmus</p>
+    </div>
+
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('convertisseur')">🔄 Convertisseur ECTS</button>
+        <button class="tab-btn" onclick="switchTab('progression')">📈 Ma progression</button>
+        <button class="tab-btn" onclick="switchTab('erasmus')">🌍 Simulateur Erasmus</button>
+    </div>
+
+    <!-- TAB CONVERTISSEUR -->
+    <div id="tab-convertisseur" class="tab-content active">
+        <div class="card">
+            <h2 class="section-title">📊 Conversion rapide</h2>
+            <div class="input-group">
+                <label>📚 Crédits ECTS</label>
+                <input type="number" id="ects-input" value="60" min="1" max="300" oninput="convertECTS()">
+            </div>
+            <div class="input-group">
+                <label>➡️ Convertir en</label>
+                <select id="conversion-type" onchange="convertECTS()">
+                    <option value="heures">Heures de travail</option>
+                    <option value="semestres">Semestres</option>
+                    <option value="annees">Années</option>
+                    <option value="credits-us">Crédits US</option>
+                    <option value="credits-uk">Crédits UK (CATS)</option>
+                </select>
+            </div>
+            <div class="erasmus-budget">
+                <div class="big-number" id="conversion-result">—</div>
+                <div style="font-size:0.8rem">Résultat de la conversion</div>
+            </div>
+
+            <h2 class="section-title" style="margin-top:1.5rem">📖 Tableau de référence</h2>
+            <div style="overflow-x:auto">
+                <table style="width:100%; border-collapse:collapse">
+                    <tr style="background:var(--bg); border-bottom:2px solid var(--border)">
+                        <th style="padding:0.5rem">ECTS</th><th>Heures</th><th>Semestres</th><th>Années</th>
+                    </tr>
+                    <tr><td style="padding:0.5rem">30</td><td>750-900h</td><td>1</td><td>0.5</td></tr>
+                    <tr><td style="padding:0.5rem">60</td><td>1500-1800h</td><td>2</td><td>1</td></tr>
+                    <tr><td style="padding:0.5rem">120</td><td>3000-3600h</td><td>4</td><td>2</td></tr>
+                    <tr><td style="padding:0.5rem">180</td><td>4500-5400h</td><td>6</td><td>3</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB PROGRESSION -->
+    <div id="tab-progression" class="tab-content">
+        <div class="card">
+            <h2 class="section-title">🎓 Mon diplôme</h2>
+            <div class="budget-row" style="justify-content:center; gap:1rem">
+                <button class="btn-primary" style="width:auto; padding:0.5rem 1rem" onclick="selectDiplome('licence')">📚 Licence (180 ECTS)</button>
+                <button class="btn-primary" style="width:auto; padding:0.5rem 1rem" onclick="selectDiplome('master')">🎓 Master (120 ECTS)</button>
+            </div>
+
+            <div class="input-group" style="margin-top:1rem">
+                <label>✅ ECTS déjà acquis</label>
+                <input type="number" id="ects-acquis" value="0" min="0" max="300" oninput="updateProgression()">
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem">
+                <span>0%</span>
+                <span id="progress-pct">0%</span>
+                <span id="total-ects">180 ECTS</span>
+            </div>
+
+            <div class="ects-timeline" id="ects-timeline"></div>
+            <div id="progression-message" style="margin-top:1rem; padding:1rem; background:var(--bg); border-radius:var(--radius-sm)"></div>
+        </div>
+    </div>
+
+    <!-- TAB ERASMUS -->
+    <div id="tab-erasmus" class="tab-content">
+        <div class="card">
+            <h2 class="section-title">🌍 Choisis ta destination</h2>
+            <div id="countries-list"></div>
+
+            <div class="input-group" style="margin-top:1rem">
+                <label>📅 Durée du séjour (mois)</label>
+                <input type="range" id="erasmus-duree" min="1" max="12" value="6" oninput="updateErasmus()">
+                <span id="duree-value" style="font-weight:700; color:var(--primary)">6 mois</span>
+            </div>
+
+            <div class="input-group">
+                <label>💰 Bourse Erasmus mensuelle estimée</label>
+                <input type="number" id="erasmus-bourse" value="300" step="50" oninput="updateErasmus()">
+            </div>
+
+            <div class="erasmus-budget" id="erasmus-result">
+                <div class="big-number">— €</div>
+                <div>Budget total estimé</div>
+            </div>
+            <div id="erasmus-detail" style="margin-top:1rem; font-size:0.85rem; color:var(--text-light)"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDiplome = 'licence';
+    const totalEcts = { licence: 180, master: 120 };
+
+    // ========== CONVERTISSEUR ==========
+    function convertECTS() {
+        const ects = parseInt(document.getElementById('ects-input').value) || 0;
+        const type = document.getElementById('conversion-type').value;
+        let result = '';
+        switch(type) {
+            case 'heures': result = (ects * 25) + ' - ' + (ects * 30) + ' heures'; break;
+            case 'semestres': result = (ects / 30).toFixed(1) + ' semestre(s)'; break;
+            case 'annees': result = (ects / 60).toFixed(1) + ' année(s)'; break;
+            case 'credits-us': result = (ects / 2).toFixed(0) + ' credit hours'; break;
+            case 'credits-uk': result = (ects * 2).toFixed(0) + ' CATS points'; break;
+        }
+        document.getElementById('conversion-result').textContent = result;
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    // ========== PROGRESSION ==========
+    function selectDiplome(diplome) {
+        currentDiplome = diplome;
+        document.getElementById('total-ects').textContent = totalEcts[diplome] + ' ECTS';
+        updateProgression();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function updateProgression() {
+        const total = totalEcts[currentDiplome];
+        const acquis = Math.min(total, parseInt(document.getElementById('ects-acquis').value) || 0);
+        const pct = Math.round((acquis / total) * 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-pct').textContent = pct + '%';
+
+        const nbBlocks = Math.min(total, 40);
+        const step = total / nbBlocks;
+        const acquisBlocks = Math.floor(acquis / step);
+        let blocksHtml = '';
+        for (let i = 0; i < nbBlocks; i++) {
+            let cls = '';
+            if (i < acquisBlocks) cls = 'acquired';
+            else if (i === acquisBlocks && acquis > 0) cls = 'in-progress';
+            blocksHtml += `<div class="ects-block ${cls}" title="${Math.round(i * step)} ECTS"></div>`;
+        }
+        document.getElementById('ects-timeline').innerHTML = blocksHtml;
+
+        const restants = total - acquis;
+        document.getElementById('progression-message').innerHTML = `
+            <strong>${acquis} ECTS acquis</strong> sur ${total}<br>
+            ${restants > 0 ? `📅 Restants : ${restants} ECTS` : '🎉 Félicitations, diplôme validé !'}
+        `;
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    // ========== ERASMUS ==========
+    const pays = [
+        { nom: '🇪🇸 Espagne', loyer: 400, vie: 300, transport: 40 },
+        { nom: '🇩🇪 Allemagne', loyer: 500, vie: 350, transport: 60 },
+        { nom: '🇮🇹 Italie', loyer: 450, vie: 320, transport: 45 },
+        { nom: '🇵🇹 Portugal', loyer: 350, vie: 280, transport: 35 },
+        { nom: '🇬🇧 Royaume-Uni', loyer: 700, vie: 450, transport: 70 },
+        { nom: '🇵🇱 Pologne', loyer: 300, vie: 250, transport: 30 },
+        { nom: '🇸🇪 Suède', loyer: 600, vie: 400, transport: 65 },
+    ];
+    let selectedCountry = pays[0];
+
+    function renderCountries() {
+        const container = document.getElementById('countries-list');
+        container.innerHTML = pays.map((p, idx) => `
+            <div class="country-card ${selectedCountry.nom === p.nom ? 'selected' : ''}" onclick="selectCountry(${idx})">
+                <strong>${p.nom}</strong><br>
+                <span style="font-size:0.8rem">🏠 Loyer ~${p.loyer}€/mois · 🍽️ Vie ~${p.vie}€</span>
+            </div>
+        `).join('');
+    }
+
+    function selectCountry(idx) {
+        selectedCountry = pays[idx];
+        renderCountries();
+        updateErasmus();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function updateErasmus() {
+        const duree = parseInt(document.getElementById('erasmus-duree').value);
+        const bourse = parseFloat(document.getElementById('erasmus-bourse').value) || 0;
+        document.getElementById('duree-value').textContent = duree + ' mois';
+
+        const mensuel = selectedCountry.loyer + selectedCountry.vie + selectedCountry.transport;
+        const total = mensuel * duree;
+        const apresBourse = total - (bourse * duree);
+
+        document.getElementById('erasmus-result').innerHTML = `
+            <div class="big-number">${apresBourse.toFixed(0)} €</div>
+            <div>Budget total estimé (après bourse)</div>
+        `;
+        document.getElementById('erasmus-detail').innerHTML = `
+            📍 ${selectedCountry.nom}<br>
+            💶 Coût mensuel : ${mensuel}€ (loyer + vie + transport)<br>
+            🎓 Bourse reçue : ${bourse * duree}€ sur ${duree} mois<br>
+            💰 Reste à charge : ${apresBourse.toFixed(0)}€
+        `;
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    // ========== ONGLETS ==========
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        event.target.classList.add('active');
+        if (tab === 'progression') updateProgression();
+        if (tab === 'erasmus') { renderCountries(); updateErasmus(); }
+    }
+
+    // ========== INIT ==========
+    convertECTS();
+    updateProgression();
+    renderCountries();
+    updateErasmus();
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

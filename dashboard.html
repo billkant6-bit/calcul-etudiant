@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard + Sommeil - CalculEtudiant</title>
+    <meta name="description" content="Tableau de bord étudiant avec métriques, objectifs, planning et calculateur de sommeil.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+        .widget {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all var(--transition);
+        }
+        .widget:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-3px);
+        }
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        .widget-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .widget-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .sleep-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.8rem 0;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .sleep-input {
+            width: 110px;
+            padding: 0.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            background: var(--bg);
+        }
+        .sleep-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .sleep-result {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-weight: 600;
+        }
+        .objectif-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .objectif-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        .objectif-check.done {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        .planning-day {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+        }
+        .planning-day-name {
+            font-weight: 700;
+            width: 40px;
+            color: var(--primary);
+        }
+        .moyenne-big {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+        }
+        .budget-big {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+        }
+        .widget-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>📊 Dashboard + Sommeil</h1>
+        <p>Vue d'ensemble de tes études, objectifs, planning et cycles de sommeil</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Widget Moyenne -->
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-icon" style="background:#FFF0E8">📊</div>
+                <div class="widget-title">Moyenne générale</div>
+            </div>
+            <div id="moyenne-widget">
+                <div class="moyenne-big" style="color:var(--text-light)">—</div>
+                <div style="text-align:center">Ajoute des notes dans le calculateur</div>
+            </div>
+            <a href="calculateur-moyenne.html" class="widget-link" onclick="if(window.addXP) addXP(5, 'use-calculator')">📊 Voir le détail →</a>
+        </div>
+
+        <!-- Widget Budget -->
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-icon" style="background:#E8F4FF">💵</div>
+                <div class="widget-title">Budget mensuel</div>
+            </div>
+            <div id="budget-widget">
+                <div class="budget-big" style="color:var(--text-light)">—</div>
+                <div style="text-align:center">Complète ton budget</div>
+            </div>
+            <a href="budget-colocation.html" class="widget-link" onclick="if(window.addXP) addXP(5, 'use-calculator')">💰 Gérer mon budget →</a>
+        </div>
+
+        <!-- Widget Sommeil -->
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-icon" style="background:#F3E8FF">😴</div>
+                <div class="widget-title">Cycle de sommeil</div>
+            </div>
+            <div class="sleep-row">
+                <span>🕒 Coucher</span>
+                <input type="time" id="bedtime" class="sleep-input" value="23:30" onchange="updateSleep()">
+            </div>
+            <div class="sleep-row">
+                <span>⏰ Réveil</span>
+                <input type="time" id="waketime" class="sleep-input" value="07:30" onchange="updateSleep()">
+            </div>
+            <div class="sleep-row">
+                <span>💤 Cycles (90 min)</span>
+                <span id="cycles-count" class="sleep-badge">—</span>
+            </div>
+            <div id="sleep-advice" class="sleep-result">😴 Calcule ton sommeil</div>
+        </div>
+
+        <!-- Widget Objectifs -->
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-icon" style="background:#ECFDF5">🎯</div>
+                <div class="widget-title">Objectifs en cours</div>
+            </div>
+            <div id="objectifs-widget"></div>
+            <a href="tracker-objectifs.html" class="widget-link" onclick="if(window.addXP) addXP(5, 'use-calculator')">🎯 Voir mes objectifs →</a>
+        </div>
+
+        <!-- Widget Planning -->
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-icon" style="background:#E8F4FF">📅</div>
+                <div class="widget-title">Planning révisions</div>
+            </div>
+            <div id="planning-widget"></div>
+            <a href="planning-revisions.html" class="widget-link" onclick="if(window.addXP) addXP(5, 'use-calculator')">📅 Voir le planning →</a>
+        </div>
+
+        <!-- Citation -->
+        <div class="widget full-width" style="text-align:center">
+            <div id="quote-text" style="font-style:italic; color:var(--text-light)">"Le succès est la somme de petits efforts répétés jour après jour."</div>
+            <div style="font-size:0.8rem; margin-top:0.5rem; color:var(--primary)">— Robert Collier</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== MOYENNE ==========
+    function loadMoyenne() {
+        const matieres = JSON.parse(localStorage.getItem('moyenne-matieres') || '[]');
+        const container = document.getElementById('moyenne-widget');
+        if (matieres.length === 0) {
+            container.innerHTML = '<div class="moyenne-big" style="color:var(--text-light)">—</div><div style="text-align:center">Ajoute des notes</div>';
+            return;
+        }
+        const totalPoints = matieres.reduce((s, m) => s + m.note * m.coeff, 0);
+        const totalCoeff = matieres.reduce((s, m) => s + m.coeff, 0);
+        const moyenne = totalPoints / totalCoeff;
+        const mention = moyenne >= 16 ? 'Très Bien' : moyenne >= 14 ? 'Bien' : moyenne >= 12 ? 'AB' : moyenne >= 10 ? 'Passable' : 'Insuffisant';
+        const color = moyenne >= 14 ? 'var(--success)' : moyenne >= 10 ? 'var(--warning)' : 'var(--danger)';
+        container.innerHTML = `<div class="moyenne-big" style="color:${color}">${moyenne.toFixed(2)}</div><div style="text-align:center">${mention}</div>`;
+    }
+
+    // ========== BUDGET ==========
+    function loadBudget() {
+        const budgetData = localStorage.getItem('budgetData');
+        const container = document.getElementById('budget-widget');
+        if (!budgetData) {
+            container.innerHTML = '<div class="budget-big" style="color:var(--text-light)">—</div><div style="text-align:center">Complète ton budget</div>';
+            return;
+        }
+        try {
+            const data = JSON.parse(budgetData);
+            const balance = (data.revenus || 0) - (data.depenses || 0);
+            const color = balance >= 100 ? 'var(--success)' : balance >= 0 ? 'var(--warning)' : 'var(--danger)';
+            container.innerHTML = `<div class="budget-big" style="color:${color}">${balance.toFixed(0)} €</div><div style="text-align:center">Reste à vivre</div>`;
+        } catch(e) {
+            container.innerHTML = '<div class="budget-big" style="color:var(--text-light)">—</div>';
+        }
+    }
+
+    // ========== SOMMEIL ==========
+    function updateSleep() {
+        const bedtime = document.getElementById('bedtime')?.value;
+        const waketime = document.getElementById('waketime')?.value;
+        if (!bedtime || !waketime) return;
+
+        const [bedH, bedM] = bedtime.split(':').map(Number);
+        const [wakeH, wakeM] = waketime.split(':').map(Number);
+
+        let bedDate = new Date();
+        bedDate.setHours(bedH, bedM, 0);
+        let wakeDate = new Date();
+        wakeDate.setHours(wakeH, wakeM, 0);
+
+        if (wakeDate <= bedDate) wakeDate.setDate(wakeDate.getDate() + 1);
+
+        const diffMinutes = (wakeDate - bedDate) / 1000 / 60;
+        const cycles = diffMinutes / 90;
+        const cyclesInt = Math.floor(cycles);
+        const remainder = Math.round((cycles - cyclesInt) * 90);
+
+        const cycleEl = document.getElementById('cycles-count');
+        const adviceEl = document.getElementById('sleep-advice');
+
+        if (cycleEl) cycleEl.textContent = cyclesInt + (remainder > 20 ? ' + réveil' : ' cycles');
+
+        if (adviceEl) {
+            if (cyclesInt >= 5) adviceEl.innerHTML = '✅ Excellent rythme ! Tu récupères bien.';
+            else if (cyclesInt >= 4) adviceEl.innerHTML = '👍 Correct, essaie 5 cycles si possible.';
+            else if (cyclesInt >= 3) adviceEl.innerHTML = '⚠️ Sommeil juste. Couche-toi 1h plus tôt.';
+            else adviceEl.innerHTML = '🚨 Trop court ! Décale ton coucher ou réveil.';
+        }
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    // ========== OBJECTIFS ==========
+    function loadObjectifs() {
+        const objectifs = JSON.parse(localStorage.getItem('tracker-objectifs') || '[]');
+        const container = document.getElementById('objectifs-widget');
+        const encours = objectifs.filter(o => o.status !== 'done');
+        if (encours.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:1rem">🎉 Tous tes objectifs sont complétés !</div>';
+            return;
+        }
+        container.innerHTML = encours.slice(0, 4).map(o => `
+            <div class="objectif-item">
+                <div class="objectif-check ${o.progress >= 100 ? 'done' : ''}">${o.progress >= 100 ? '✓' : ''}</div>
+                <div style="flex:1">${o.title}</div>
+                <span style="font-size:0.7rem">${o.progress || 0}%</span>
+            </div>
+        `).join('');
+    }
+
+    // ========== PLANNING ==========
+    function loadPlanning() {
+        const sessions = JSON.parse(localStorage.getItem('planning-sessions') || '[]');
+        const container = document.getElementById('planning-widget');
+        if (sessions.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:1rem">Aucune session planifiée</div>';
+            return;
+        }
+        const today = new Date();
+        const weekSessions = sessions.filter(s => {
+            const sDate = new Date(s.date + 'T00:00:00');
+            const diff = (sDate - today) / (1000 * 60 * 60 * 24);
+            return diff >= -7 && diff <= 14;
+        });
+        if (weekSessions.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:1rem">Pas de session cette semaine</div>';
+            return;
+        }
+        const grouped = {};
+        weekSessions.forEach(s => { if (!grouped[s.date]) grouped[s.date] = []; grouped[s.date].push(s); });
+        const dayNames = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
+        let html = '';
+        Object.keys(grouped).slice(0, 5).forEach(date => {
+            const d = new Date(date + 'T00:00:00');
+            const dayName = dayNames[d.getDay()];
+            const matieres = grouped[date].map(s => s.matiere).join(', ');
+            html += `<div class="planning-day"><span class="planning-day-name">${dayName}</span><span>${matieres}</span></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // ========== CITATIONS ==========
+    const quotes = [
+        { text: '"Le succès est la somme de petits efforts répétés jour après jour."', author: 'Robert Collier' },
+        { text: '"L\'éducation est l\'arme la plus puissante pour changer le monde."', author: 'Nelson Mandela' },
+        { text: '"La persévérance est la clé de la réussite."', author: 'Proverbe' }
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById('quote-text').innerHTML = randomQuote.text;
+
+    // ========== INIT ==========
+    loadMoyenne();
+    loadBudget();
+    loadObjectifs();
+    loadPlanning();
+    updateSleep();
+
+    setInterval(() => {
+        loadMoyenne();
+        loadBudget();
+        loadObjectifs();
+        loadPlanning();
+    }, 30000);
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

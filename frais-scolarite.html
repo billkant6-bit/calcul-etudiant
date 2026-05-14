@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frais de Scolarité & Logement - CalculEtudiant</title>
+    <meta name="description" content="Calcule le coût total de tes études, compare les villes et choisis entre CROUS et logement privé.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .slider-group { margin-bottom: 1.2rem; }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.4rem;
+        }
+        .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .slider-value { font-weight: 700; color: var(--primary); }
+
+        .villes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem; }
+        .ville-btn { background: var(--bg); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem; text-align: center; cursor: pointer; transition: all var(--transition); font-weight: 600; font-size: 0.8rem; }
+        .ville-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .ville-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        .comparison-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+        .comparison-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; text-align: center; }
+        .comparison-card h4 { font-family: 'Syne', sans-serif; margin-bottom: 0.8rem; color: var(--text); }
+        .comparison-card .price { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; }
+        .comparison-card .detail { font-size: 0.8rem; color: var(--text-light); margin-top: 0.3rem; }
+        .comparison-card.crous { border-left: 4px solid var(--success); }
+        .comparison-card.prive { border-left: 4px solid var(--primary); }
+        .winner-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 50px; font-weight: 700; font-size: 0.75rem; margin-top: 0.5rem; }
+        .winner-crous { background: #ECFDF5; color: #059669; }
+        .winner-prive { background: #FFF7ED; color: #F59E0B; }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .comparison-cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🎓 Frais de Scolarité & Logement</h1>
+        <p>Calcule le coût total de tes études et compare CROUS vs logement privé</p>
+    </div>
+
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('frais', this)">💰 Frais de Scolarité</button>
+        <button class="tab-btn" onclick="switchTab('logement', this)">🏠 CROUS vs Privé</button>
+    </div>
+
+    <!-- TAB FRAIS -->
+    <div id="tab-frais" class="tab-content active">
+        <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+            <div class="card">
+                <h2 class="section-title">📍 Ta situation</h2>
+                <p style="font-weight:600;font-size:0.85rem;color:var(--text-light);margin-bottom:0.8rem">🏙️ Ville d'études</p>
+                <div class="villes-grid" id="villes-grid">
+                    <button class="ville-btn selected" data-ville="paris" onclick="selectVille(this)">🗼 Paris</button>
+                    <button class="ville-btn" data-ville="lyon" onclick="selectVille(this)">🦁 Lyon</button>
+                    <button class="ville-btn" data-ville="marseille" onclick="selectVille(this)">⚓ Marseille</button>
+                    <button class="ville-btn" data-ville="lille" onclick="selectVille(this)">🏰 Lille</button>
+                    <button class="ville-btn" data-ville="bordeaux" onclick="selectVille(this)">🍷 Bordeaux</button>
+                    <button class="ville-btn" data-ville="toulouse" onclick="selectVille(this)">✈️ Toulouse</button>
+                </div>
+                <div class="slider-group"><label>🏠 Loyer mensuel <span class="slider-value" id="val-loyer">700 €</span></label><input type="range" id="loyer" min="200" max="1200" value="700" step="10" oninput="updateFrais()"></div>
+                <div class="slider-group"><label>🍽️ Alimentation <span class="slider-value" id="val-alimentation">250 €</span></label><input type="range" id="alimentation" min="100" max="500" value="250" step="10" oninput="updateFrais()"></div>
+                <div class="slider-group"><label>🚌 Transport <span class="slider-value" id="val-transport">40 €</span></label><input type="range" id="transport" min="0" max="150" value="40" step="5" oninput="updateFrais()"></div>
+                <div class="slider-group"><label>📚 Fournitures <span class="slider-value" id="val-fournitures">50 €</span></label><input type="range" id="fournitures" min="20" max="200" value="50" step="5" oninput="updateFrais()"></div>
+                <div class="slider-group"><label>🎉 Loisirs <span class="slider-value" id="val-loisirs">100 €</span></label><input type="range" id="loisirs" min="30" max="300" value="100" step="5" oninput="updateFrais()"></div>
+                <div class="input-group"><label>📋 Frais d'inscription</label><select id="inscription" onchange="updateFrais()"><option value="170">Licence (170 €)</option><option value="243">Master (243 €)</option><option value="380">Doctorat (380 €)</option><option value="0">Boursier (0 €)</option></select></div>
+                <div class="input-group"><label>💶 CVEC</label><select id="cvec" onchange="updateFrais()"><option value="103">103 € (standard)</option><option value="0">Exonéré (boursier)</option></select></div>
+            </div>
+            <div class="card">
+                <h2 class="section-title">📊 Coût estimé</h2>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--primary)" id="cout-mensuel">—</div><div style="font-size:0.75rem;color:var(--text-light)">Coût mensuel</div></div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--danger)" id="cout-annuel">—</div><div style="font-size:0.75rem;color:var(--text-light)">Coût annuel</div></div>
+                </div>
+                <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:1rem;text-align:center">
+                    <p>💡 <strong>Sur 3 ans (Licence) :</strong> <span id="cout-3ans" style="color:var(--primary);font-weight:700">—</span></p>
+                    <p>💡 <strong>Sur 5 ans (Master) :</strong> <span id="cout-5ans" style="color:var(--primary);font-weight:700">—</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB LOGEMENT -->
+    <div id="tab-logement" class="tab-content">
+        <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+            <div class="card">
+                <h2 class="section-title">🏠 Compare CROUS vs Privé</h2>
+                <p style="font-weight:600;font-size:0.85rem;color:var(--text-light);margin-bottom:0.8rem">🏙️ Ville</p>
+                <div class="villes-grid" id="villes-grid-logement">
+                    <button class="ville-btn selected" data-ville="paris" onclick="selectVilleLogement(this)">🗼 Paris</button>
+                    <button class="ville-btn" data-ville="lyon" onclick="selectVilleLogement(this)">🦁 Lyon</button>
+                    <button class="ville-btn" data-ville="marseille" onclick="selectVilleLogement(this)">⚓ Marseille</button>
+                    <button class="ville-btn" data-ville="lille" onclick="selectVilleLogement(this)">🏰 Lille</button>
+                    <button class="ville-btn" data-ville="bordeaux" onclick="selectVilleLogement(this)">🍷 Bordeaux</button>
+                    <button class="ville-btn" data-ville="toulouse" onclick="selectVilleLogement(this)">✈️ Toulouse</button>
+                </div>
+                <div class="slider-group"><label>🍽️ Alimentation <span class="slider-value" id="val-alim-logement">250 €</span></label><input type="range" id="alim-logement" min="100" max="500" value="250" step="10" oninput="updateLogement()"></div>
+                <div class="slider-group"><label>🚌 Transport <span class="slider-value" id="val-transport-logement">40 €</span></label><input type="range" id="transport-logement" min="0" max="150" value="40" step="5" oninput="updateLogement()"></div>
+            </div>
+            <div class="card">
+                <h2 class="section-title">📊 Résultat</h2>
+                <div class="comparison-cards">
+                    <div class="comparison-card crous">
+                        <h4>🏢 Résidence CROUS</h4>
+                        <div class="price" style="color:var(--success)" id="prix-crous">— €</div>
+                        <div class="detail">Loyer moyen (charges incluses)</div>
+                        <div class="detail" id="dispo-crous">⚠️ Places limitées</div>
+                    </div>
+                    <div class="comparison-card prive">
+                        <h4>🏠 Logement Privé</h4>
+                        <div class="price" style="color:var(--primary)" id="prix-prive">— €</div>
+                        <div class="detail">Loyer moyen (studio)</div>
+                        <div class="detail">➕ Charges, électricité, internet</div>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:1.5rem">
+                    <p style="font-weight:600;color:var(--text)">💰 Économie mensuelle en choisissant le CROUS :</p>
+                    <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--success)" id="economie-crous">— €</div>
+                    <span class="winner-badge winner-crous" id="badge-crous">✅ CROUS moins cher</span>
+                </div>
+                <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:var(--radius-sm)">
+                    <p style="font-size:0.85rem;color:var(--text-light)">💡 <strong>À savoir :</strong> Les résidences CROUS sont attribuées sur critères sociaux. Fais ta demande tôt (dès janvier) !</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const villes = {
+        paris: { loyer: 700, crous: 350, alimentation: 280, transport: 84 },
+        lyon: { loyer: 500, crous: 250, alimentation: 250, transport: 66 },
+        marseille: { loyer: 450, crous: 230, alimentation: 230, transport: 50 },
+        lille: { loyer: 480, crous: 200, alimentation: 240, transport: 55 },
+        bordeaux: { loyer: 520, crous: 250, alimentation: 250, transport: 40 },
+        toulouse: { loyer: 470, crous: 220, alimentation: 240, transport: 20 }
+    };
+    let currentVille = 'paris';
+    let currentVilleLogement = 'paris';
+
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    function selectVille(btn) {
+        document.querySelectorAll('#villes-grid .ville-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        currentVille = btn.dataset.ville;
+        const v = villes[currentVille];
+        document.getElementById('loyer').value = v.loyer;
+        document.getElementById('alimentation').value = v.alimentation;
+        document.getElementById('transport').value = v.transport;
+        updateFrais();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function updateFrais() {
+        const loyer = parseInt(document.getElementById('loyer').value);
+        const alimentation = parseInt(document.getElementById('alimentation').value);
+        const transport = parseInt(document.getElementById('transport').value);
+        const fournitures = parseInt(document.getElementById('fournitures').value);
+        const loisirs = parseInt(document.getElementById('loisirs').value);
+        const inscription = parseInt(document.getElementById('inscription').value);
+        const cvec = parseInt(document.getElementById('cvec').value);
+
+        document.getElementById('val-loyer').textContent = loyer + ' €';
+        document.getElementById('val-alimentation').textContent = alimentation + ' €';
+        document.getElementById('val-transport').textContent = transport + ' €';
+        document.getElementById('val-fournitures').textContent = fournitures + ' €';
+        document.getElementById('val-loisirs').textContent = loisirs + ' €';
+
+        const mensuel = loyer + alimentation + transport + fournitures + loisirs;
+        const annuel = mensuel * 10 + inscription + cvec;
+
+        document.getElementById('cout-mensuel').textContent = mensuel.toFixed(0) + ' €';
+        document.getElementById('cout-annuel').textContent = annuel.toFixed(0) + ' €';
+        document.getElementById('cout-3ans').textContent = (annuel * 3).toFixed(0) + ' €';
+        document.getElementById('cout-5ans').textContent = (annuel * 5).toFixed(0) + ' €';
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function selectVilleLogement(btn) {
+        document.querySelectorAll('#villes-grid-logement .ville-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        currentVilleLogement = btn.dataset.ville;
+        updateLogement();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function updateLogement() {
+        const v = villes[currentVilleLogement];
+        const alimentation = parseInt(document.getElementById('alim-logement').value);
+        const transport = parseInt(document.getElementById('transport-logement').value);
+        document.getElementById('val-alim-logement').textContent = alimentation + ' €';
+        document.getElementById('val-transport-logement').textContent = transport + ' €';
+        const prixCrous = v.crous;
+        const prixPrive = v.loyer + 100;
+        const economie = prixPrive - prixCrous;
+        document.getElementById('prix-crous').textContent = prixCrous + ' €/mois';
+        document.getElementById('prix-prive').textContent = prixPrive + ' €/mois';
+        document.getElementById('economie-crous').textContent = economie + ' €/mois';
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    updateFrais();
+    updateLogement();
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

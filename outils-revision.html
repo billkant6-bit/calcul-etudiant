@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ressources de Révision - CalculEtudiant</title>
+    <meta name="description" content="Les meilleurs outils de révision pour étudiants : IA, flashcards, organisation et bien plus.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .search-bar { max-width: 600px; margin: 0 auto 2rem; }
+        .search-input {
+            width: 100%; padding: 1rem 1.5rem; border: 2px solid var(--border); border-radius: 50px;
+            font-size: 1rem; background: var(--card); transition: all var(--transition);
+        }
+        .search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+
+        .filters { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+        .filter-bubble {
+            background: var(--card); border: 1px solid var(--border); padding: 0.5rem 1.2rem;
+            border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            transition: all var(--transition);
+        }
+        .filter-bubble.active { background: var(--primary); color: #FFF; border-color: var(--primary); }
+        .filter-bubble:hover:not(.active) { border-color: var(--primary); }
+
+        .tools-masonry { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .tool-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.5rem; cursor: pointer; transition: all var(--transition); position: relative;
+        }
+        .tool-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .tool-card.featured { border: 2px solid rgba(var(--primaryRGB),0.3); }
+        .tool-card.featured::before {
+            content: '⭐ Recommandé'; position: absolute; top: 12px; right: -30px;
+            background: linear-gradient(135deg, #FFD23F, #FF9F1C); color: #000; padding: 0.3rem 2.5rem;
+            font-size: 0.65rem; font-weight: 800; transform: rotate(45deg);
+        }
+        .tool-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .tool-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; background: var(--bg); }
+        .tool-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+        .tool-tagline { font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 0.8rem; }
+        .tool-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+        .tool-tag { background: var(--bg); padding: 0.25rem 0.7rem; border-radius: 50px; font-size: 0.72rem; font-weight: 600; color: var(--text-light); }
+        .tool-meta { display: flex; justify-content: space-between; align-items: center; }
+        .tool-price { padding: 0.3rem 0.8rem; border-radius: 50px; font-weight: 700; font-size: 0.75rem; }
+        .tool-price.free { background: #ECFDF5; color: #059669; }
+        .tool-price.freemium { background: #FFFBEB; color: #D97706; }
+        .tool-price.paid { background: #FEF2F2; color: #DC2626; }
+        .tool-rating { color: #F59E0B; font-weight: 600; font-size: 0.85rem; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: center;
+            justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--card); border-radius: var(--radius); padding: 2rem;
+            max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modalIn 0.4s ease-out;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-close { float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+        .modal h3 { font-family: 'Syne', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text); }
+        .modal .points-forts { color: var(--success); }
+        .modal .points-faibles { color: var(--danger); }
+        .modal li { margin-bottom: 0.4rem; }
+
+        .compare-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+            border-top: 1px solid var(--border); padding: 1rem 2rem; z-index: 150;
+            display: flex; align-items: center; gap: 1rem; justify-content: center;
+            transform: translateY(100%); transition: transform var(--transition);
+        }
+        .compare-bar.active { transform: translateY(0); }
+        .compare-item {
+            background: var(--bg); padding: 0.5rem 1rem; border-radius: 50px;
+            font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .compare-remove {
+            background: var(--danger); color: #FFF; border: none; width: 20px; height: 20px;
+            border-radius: 50%; cursor: pointer; font-size: 0.6rem;
+        }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu {
+            position: absolute; top: 120%; right: 0; background: var(--card);
+            border: 1px solid var(--border); border-radius: 20px; padding: 1rem;
+            min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0;
+            pointer-events: none; transition: opacity 0.3s; z-index: 200;
+        }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+            padding: 0.6rem 0.4rem; border: 2px solid transparent; border-radius: 12px;
+            background: transparent; cursor: pointer; font-size: 0.65rem; font-weight: 600;
+            color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) { .tools-masonry { grid-template-columns: 1fr; } .modal { padding: 1.5rem; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🧠 Ressources de Révision</h1>
+        <p>Les meilleurs outils pour booster tes révisions, sélectionnés et testés</p>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" class="search-input" id="search-input" placeholder="🔍 Chercher un outil... (ex: flashcards, IA, quiz)" oninput="filterTools()">
+    </div>
+
+    <div class="filters">
+        <button class="filter-bubble active" data-filter="all" onclick="filterCategory('all', this)">🔥 Tous</button>
+        <button class="filter-bubble" data-filter="ia" onclick="filterCategory('ia', this)">🤖 IA</button>
+        <button class="filter-bubble" data-filter="flashcards" onclick="filterCategory('flashcards', this)">🃏 Flashcards</button>
+        <button class="filter-bubble" data-filter="organisation" onclick="filterCategory('organisation', this)">📅 Organisation</button>
+        <button class="filter-bubble" data-filter="cours" onclick="filterCategory('cours', this)">📚 Cours</button>
+        <button class="filter-bubble" data-filter="gratuit" onclick="filterCategory('gratuit', this)">🆓 Gratuit</button>
+    </div>
+
+    <div class="tools-masonry" id="tools-grid"></div>
+</div>
+
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modal-content"></div>
+    </div>
+</div>
+
+<div class="compare-bar" id="compare-bar">
+    <span style="font-weight:700">🔄 Comparer :</span>
+    <div id="compare-items"></div>
+    <button class="btn-primary" style="width:auto;padding:0.5rem 1.5rem;font-size:0.85rem" onclick="compareTools()">Comparer</button>
+</div>
+
+<script>
+    let currentFilter = 'all';
+    let compareList = [];
+
+    const tools = [
+        { id:1, name:'NotebookLM', icon:'📓', couleur:'#4285F4', tagline:'IA Google qui analyse tes docs et crée résumés, quiz et podcasts.', category:'ia', tags:['IA','Google','PDF','Podcast'], price:'free', rating:4.7, featured:true, lien:'https://notebooklm.google.com', pointsForts:['Gratuit','Analyse PDF/Web','Génère des podcasts audio'], pointsFaibles:['Nécessite un compte Google','En anglais principalement'] },
+        { id:2, name:'ChatGPT', icon:'🤖', couleur:'#10A37F', tagline:'Assistant IA polyvalent pour expliquer, résumer et créer des quiz.', category:'ia', tags:['IA','Polyvalent','Conversation'], price:'freemium', rating:4.8, featured:true, lien:'https://chat.openai.com', pointsForts:['Très polyvalent','Version gratuite','Comprend le français'], pointsFaibles:['Peut faire des erreurs','Limite de messages'] },
+        { id:3, name:'Quizlet', icon:'📚', couleur:'#4255FF', tagline:'La référence des flashcards, boostée à l\'IA.', category:'flashcards', tags:['Flashcards','IA','Mobile'], price:'freemium', rating:4.8, featured:true, lien:'https://quizlet.com', pointsForts:['Base énorme','Mode apprentissage','App mobile'], pointsFaibles:['Premium payant','Pub gratuite'] },
+        { id:4, name:'Anki', icon:'🃏', couleur:'#2196F3', tagline:'Répétition espacée pour mémoriser sur le long terme.', category:'flashcards', tags:['Flashcards','Répétition espacée','Open source'], price:'free', rating:4.9, featured:true, lien:'https://apps.ankiweb.net', pointsForts:['Gratuit','Open source','Ultra efficace'], pointsFaibles:['Interface austère','Courbe d\'apprentissage'] },
+        { id:5, name:'Notion', icon:'📋', couleur:'#000000', tagline:'Organise tes cours, notes et plannings avec l\'IA intégrée.', category:'organisation', tags:['Notes','Planning','IA'], price:'free', rating:4.7, featured:true, lien:'https://notion.so', pointsForts:['Gratuit étudiant','IA intégrée','Templates'], pointsFaibles:['Complexe au début'] },
+        { id:6, name:'Forest', icon:'🌳', couleur:'#4CAF50', tagline:'Reste concentré en faisant pousser des arbres virtuels.', category:'organisation', tags:['Focus','Pomodoro','Gamification'], price:'paid', rating:4.6, featured:false, lien:'https://forestapp.cc', pointsForts:['Très motivant','Plante de vrais arbres'], pointsFaibles:['Payant (2-3€)'] },
+        { id:7, name:'Khan Academy', icon:'🎓', couleur:'#14BF96', tagline:'Cours vidéo gratuits dans toutes les matières.', category:'cours', tags:['Vidéos','Exercices','Gratuit'], price:'free', rating:4.8, featured:true, lien:'https://khanacademy.org', pointsForts:['100% gratuit','Très complet'], pointsFaibles:['Surtout en anglais'] },
+        { id:8, name:'Wolfram Alpha', icon:'🔢', couleur:'#DD1100', tagline:'Moteur de calcul pour maths, physique, chimie.', category:'cours', tags:['Maths','Physique','Calcul'], price:'freemium', rating:4.7, featured:false, lien:'https://wolframalpha.com', pointsForts:['Ultra précis','Résolution pas à pas'], pointsFaibles:['Version pro payante'] },
+        { id:9, name:'EduFiche', icon:'🇫🇷', couleur:'#FF5722', tagline:'Plateforme francophone de fiches intelligentes.', category:'ia', tags:['Français','Fiches','IA'], price:'free', rating:4.4, featured:false, lien:'https://edufiche.fr', pointsForts:['100% français','Adapté système français'], pointsFaibles:['Plus récent'] },
+        { id:10, name:'Kartable', icon:'🏫', couleur:'#E91E63', tagline:'Cours conformes au programme scolaire français.', category:'cours', tags:['Programme','Exercices','Bac'], price:'paid', rating:4.3, featured:false, lien:'https://kartable.fr', pointsForts:['Conforme programmes','Exercices corrigés'], pointsFaibles:['Payant'] },
+        { id:11, name:'Gizmo', icon:'🧩', couleur:'#9C27B0', tagline:'Assistant IA pour créer quiz et fiches personnalisés.', category:'ia', tags:['Quiz','IA','Personnalisé'], price:'freemium', rating:4.6, featured:false, lien:'https://gizmo.ai', pointsForts:['Personnalisation','Quiz adaptatifs'], pointsFaibles:['Version gratuite limitée'] },
+        { id:12, name:'Nomad Education', icon:'📱', couleur:'#FF9800', tagline:'Révise sur mobile avec des quiz gamifiés.', category:'cours', tags:['Mobile','Bac','Quiz'], price:'freemium', rating:4.2, featured:false, lien:'https://nomadeducation.fr', pointsForts:['100% mobile','Ludique'], pointsFaibles:['Contenu superficiel'] }
+    ];
+
+    function renderTools(filteredTools) {
+        const grid = document.getElementById('tools-grid');
+        grid.innerHTML = filteredTools.map(t => `
+            <div class="tool-card ${t.featured ? 'featured' : ''}" onclick="openTool(${t.id})">
+                <div class="tool-header">
+                    <div class="tool-icon" style="background:${t.couleur}15">${t.icon}</div>
+                    <div><div class="tool-name">${t.name}</div></div>
+                </div>
+                <p class="tool-tagline">${t.tagline}</p>
+                <div class="tool-tags">${t.tags.map(tag => `<span class="tool-tag">${tag}</span>`).join('')}</div>
+                <div class="tool-meta">
+                    <span class="tool-price ${t.price}">${t.price === 'free' ? '🆓 Gratuit' : t.price === 'freemium' ? '🟡 Freemium' : '🔒 Payant'}</span>
+                    <span class="tool-rating">⭐ ${t.rating}</span>
+                </div>
+                <button style="background:var(--primary-light);color:var(--primary);border:none;padding:0.3rem 0.8rem;border-radius:8px;cursor:pointer;font-size:0.75rem;margin-top:0.8rem;font-weight:600" onclick="event.stopPropagation();toggleCompare(${t.id})">
+                    ${compareList.includes(t.id) ? '✅ Comparateur' : '🔄 Comparer'}
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function filterCategory(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-bubble').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterTools();
+    }
+
+    function filterTools() {
+        const search = document.getElementById('search-input').value.toLowerCase();
+        let filtered = tools;
+        if (currentFilter === 'gratuit') filtered = filtered.filter(t => t.price === 'free');
+        else if (currentFilter !== 'all') filtered = filtered.filter(t => t.category === currentFilter);
+        if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || t.tags.some(tag => tag.toLowerCase().includes(search)));
+        renderTools(filtered);
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function openTool(id) {
+        const t = tools.find(tool => tool.id === id);
+        if (!t) return;
+        document.getElementById('modal-content').innerHTML = `
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+                <div style="width:64px;height:64px;border-radius:16px;background:${t.couleur}15;display:flex;align-items:center;justify-content:center;font-size:2rem">${t.icon}</div>
+                <div><h3>${t.name}</h3><span class="tool-price ${t.price}">${t.price === 'free' ? '🆓 Gratuit' : t.price === 'freemium' ? '🟡 Freemium' : '🔒 Payant'}</span><span style="margin-left:0.5rem">⭐ ${t.rating}/5</span></div>
+            </div>
+            <p style="margin-bottom:1.5rem;line-height:1.7">${t.tagline}</p>
+            <h4 style="color:var(--success);margin-bottom:0.5rem">✅ Points forts</h4>
+            <ul class="points-forts">${t.pointsForts.map(p => `<li>${p}</li>`).join('')}</ul>
+            <h4 style="color:var(--danger);margin-top:1rem;margin-bottom:0.5rem">⚠️ Points faibles</h4>
+            <ul class="points-faibles">${t.pointsFaibles.map(p => `<li>${p}</li>`).join('')}</ul>
+            <div class="tool-tags" style="margin-top:1rem">${t.tags.map(tag => `<span class="tool-tag">${tag}</span>`).join('')}</div>
+            <a href="${t.lien}" target="_blank" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;margin-top:1.5rem">🔗 Accéder à ${t.name}</a>
+        `;
+        document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+    function toggleCompare(id) {
+        if (compareList.includes(id)) compareList = compareList.filter(i => i !== id);
+        else if (compareList.length < 3) compareList.push(id);
+        updateCompareBar();
+        filterTools();
+    }
+
+    function updateCompareBar() {
+        const bar = document.getElementById('compare-bar');
+        const items = document.getElementById('compare-items');
+        if (compareList.length === 0) { bar.classList.remove('active'); return; }
+        bar.classList.add('active');
+        items.innerHTML = compareList.map(id => {
+            const t = tools.find(tool => tool.id === id);
+            return `<span class="compare-item">${t.icon} ${t.name} <button class="compare-remove" onclick="toggleCompare(${id})">×</button></span>`;
+        }).join('');
+    }
+
+    function compareTools() {
+        if (compareList.length < 2) return alert('Sélectionne au moins 2 outils');
+        const selected = tools.filter(t => compareList.includes(t.id));
+        let html = '<h3>🔄 Comparaison</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;margin-top:1rem">';
+        html += '<tr><th></th>' + selected.map(t => `<th style="text-align:center">${t.icon}<br>${t.name}</th>`).join('') + '</tr>';
+        html += `<tr><td><strong>Prix</strong></td>${selected.map(t => `<td style="text-align:center">${t.price === 'free' ? '🆓 Gratuit' : t.price === 'freemium' ? '🟡 Freemium' : '🔒 Payant'}</td>`).join('')}</tr>`;
+        html += `<tr><td><strong>Note</strong></td>${selected.map(t => `<td style="text-align:center">⭐ ${t.rating}</td>`).join('')}</tr>`;
+        html += `<tr><td><strong>IA</strong></td>${selected.map(t => `<td style="text-align:center">${t.tags.includes('IA') ? '✅' : '❌'}</td>`).join('')}</tr>`;
+        html += `<tr><td><strong>Mobile</strong></td>${selected.map(t => `<td style="text-align:center">${t.tags.includes('Mobile') ? '✅' : '❌'}</td>`).join('')}</tr>`;
+        html += '</table></div>';
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('modal').classList.add('active');
+    }
+
+    document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+    renderTools(tools);
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

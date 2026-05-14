@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget & Colocation - CalculEtudiant</title>
+    <meta name="description" content="Gère ton budget étudiant solo ou en colocation, avec checklist état des lieux intégrée.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .checklist-panel {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        .checklist-item span {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+        .checklist-item button {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+        }
+        .budget-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .budget-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .budget-input-mini {
+            width: 110px;
+            padding: 0.4rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-align: right;
+            background: var(--card);
+        }
+        .total-card {
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .total-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>💰 Budget & Colocation</h1>
+        <p>Gère ton budget solo, partage tes dépenses en coloc, et prépare ton état des lieux</p>
+    </div>
+
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('solo')">👤 Budget solo</button>
+        <button class="tab-btn" onclick="switchTab('coloc')">🏠 Colocation</button>
+        <button class="tab-btn" onclick="switchTab('checklist')">📋 État des lieux</button>
+    </div>
+
+    <!-- TAB SOLO -->
+    <div id="tab-solo" class="tab-content active">
+        <div class="card">
+            <h2 class="section-title">💰 Revenus</h2>
+            <div class="budget-row"><span class="budget-label">Bourse</span><input type="number" id="rev-bourse" class="budget-input-mini" value="0" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Salaire / Job</span><input type="number" id="rev-salaire" class="budget-input-mini" value="0" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Aide familiale</span><input type="number" id="rev-famille" class="budget-input-mini" value="0" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">APL / CAF</span><input type="number" id="rev-apl" class="budget-input-mini" value="0" oninput="updateSolo()"></div>
+
+            <h2 class="section-title" style="margin-top:1.5rem">📉 Dépenses fixes</h2>
+            <div class="budget-row"><span class="budget-label">Loyer</span><input type="number" id="dep-loyer" class="budget-input-mini" value="450" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Internet / Téléphone</span><input type="number" id="dep-internet" class="budget-input-mini" value="30" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Assurance</span><input type="number" id="dep-assurance" class="budget-input-mini" value="15" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Transport</span><input type="number" id="dep-transport" class="budget-input-mini" value="40" oninput="updateSolo()"></div>
+
+            <h2 class="section-title" style="margin-top:1.5rem">🍽️ Dépenses variables</h2>
+            <div class="budget-row"><span class="budget-label">Alimentation</span><input type="number" id="dep-alimentation" class="budget-input-mini" value="200" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Loisirs / Sorties</span><input type="number" id="dep-loisirs" class="budget-input-mini" value="80" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Vêtements</span><input type="number" id="dep-vetements" class="budget-input-mini" value="40" oninput="updateSolo()"></div>
+            <div class="budget-row"><span class="budget-label">Fournitures / Cours</span><input type="number" id="dep-cours" class="budget-input-mini" value="30" oninput="updateSolo()"></div>
+
+            <div class="total-card">
+                <div class="total-value" id="solo-balance">0 €</div>
+                <div style="font-size:0.8rem">Reste à vivre par mois</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB COLOCATION -->
+    <div id="tab-coloc" class="tab-content">
+        <div class="card">
+            <h2 class="section-title">👥 Colocataires</h2>
+            <div id="coloc-list"></div>
+            <button class="add-item-btn" onclick="addColocataire()" style="margin-top:0.5rem">+ Ajouter un colocataire</button>
+
+            <h2 class="section-title" style="margin-top:1.5rem">💰 Dépenses communes</h2>
+            <div class="budget-row"><span class="budget-label">Loyer total</span><input type="number" id="coloc-loyer" class="budget-input-mini" value="800" oninput="updateColoc()"></div>
+            <div class="budget-row"><span class="budget-label">Électricité / Gaz</span><input type="number" id="coloc-electricite" class="budget-input-mini" value="80" oninput="updateColoc()"></div>
+            <div class="budget-row"><span class="budget-label">Internet</span><input type="number" id="coloc-internet" class="budget-input-mini" value="30" oninput="updateColoc()"></div>
+            <div class="budget-row"><span class="budget-label">Courses communes</span><input type="number" id="coloc-courses" class="budget-input-mini" value="200" oninput="updateColoc()"></div>
+
+            <div class="total-card">
+                <div class="total-value" id="coloc-part">0 €</div>
+                <div style="font-size:0.8rem">Ta part mensuelle</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB CHECKLIST ÉTAT DES LIEUX -->
+    <div id="tab-checklist" class="tab-content">
+        <div class="card">
+            <h2 class="section-title">📋 État des lieux (colocation / logement)</h2>
+            <div id="checklist-container"></div>
+            <div class="budget-row" style="margin-top:1rem">
+                <input type="text" id="new-check-item" placeholder="Nouvel élément (ex: frigo, compteur, mur)" style="flex:1">
+                <button class="add-item-btn" style="width:auto; margin:0 0 0 0.5rem" onclick="addChecklistItem()">+ Ajouter</button>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-light); margin-top:1rem">💡 Coche au fur et à mesure lors de l'état des lieux d'entrée / sortie</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== BUDGET SOLO ==========
+    function updateSolo() {
+        const revenus = ['rev-bourse','rev-salaire','rev-famille','rev-apl'].reduce((sum,id) => sum + (parseFloat(document.getElementById(id)?.value) || 0), 0);
+        const depenses = ['dep-loyer','dep-internet','dep-assurance','dep-transport','dep-alimentation','dep-loisirs','dep-vetements','dep-cours'].reduce((sum,id) => sum + (parseFloat(document.getElementById(id)?.value) || 0), 0);
+        const balance = revenus - depenses;
+        const el = document.getElementById('solo-balance');
+        if (el) {
+            el.textContent = balance.toFixed(0) + ' €';
+            el.style.color = balance >= 100 ? 'var(--success)' : balance >= 0 ? 'var(--warning)' : 'var(--danger)';
+        }
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    // ========== COLOCATION ==========
+    let colocataires = JSON.parse(localStorage.getItem('colocataires') || '["Moi"]');
+
+    function renderColoc() {
+        const container = document.getElementById('coloc-list');
+        if (!container) return;
+        container.innerHTML = colocataires.map((nom, idx) => `
+            <div class="budget-row">
+                <span class="budget-label">👤 ${nom}</span>
+                <input type="number" id="coloc-part-${idx}" class="budget-input-mini" placeholder="Part loyer" value="0" onchange="updateColoc()">
+                ${idx > 0 ? `<button onclick="removeColocataire(${idx})" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:6px;padding:0 0.5rem">🗑️</button>` : ''}
+            </div>
+        `).join('');
+        updateColoc();
+    }
+
+    function addColocataire() {
+        const nom = prompt("Nom du colocataire :");
+        if (!nom) return;
+        colocataires.push(nom);
+        localStorage.setItem('colocataires', JSON.stringify(colocataires));
+        renderColoc();
+    }
+
+    function removeColocataire(idx) {
+        colocataires.splice(idx, 1);
+        localStorage.setItem('colocataires', JSON.stringify(colocataires));
+        renderColoc();
+    }
+
+    function updateColoc() {
+        const loyerTotal = parseFloat(document.getElementById('coloc-loyer')?.value) || 0;
+        const electricite = parseFloat(document.getElementById('coloc-electricite')?.value) || 0;
+        const internet = parseFloat(document.getElementById('coloc-internet')?.value) || 0;
+        const courses = parseFloat(document.getElementById('coloc-courses')?.value) || 0;
+        const communes = electricite + internet + courses;
+
+        let partsLoyer = 0;
+        colocataires.forEach((_, idx) => {
+            const val = parseFloat(document.getElementById(`coloc-part-${idx}`)?.value) || 0;
+            partsLoyer += val;
+        });
+
+        const maPartLoyer = parseFloat(document.getElementById('coloc-part-0')?.value) || 0;
+        const nbColocs = colocataires.length;
+        const maPartCommunes = communes / nbColocs;
+        const total = maPartLoyer + maPartCommunes;
+
+        const el = document.getElementById('coloc-part');
+        if (el) el.textContent = total.toFixed(0) + ' €';
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    // ========== CHECKLIST ==========
+    let checklist = JSON.parse(localStorage.getItem('etat-lieux') || '["Murs et sols","Fenêtres","Prises électriques","Plomberie","Frigo","Chauffage"]');
+
+    function renderChecklist() {
+        const container = document.getElementById('checklist-container');
+        if (!container) return;
+        container.innerHTML = checklist.map((item, idx) => `
+            <div class="checklist-item">
+                <input type="checkbox" id="check-${idx}" ${localStorage.getItem(`check-${idx}`) === 'true' ? 'checked' : ''} onchange="localStorage.setItem('check-${idx}', this.checked)">
+                <span>${item}</span>
+                <button onclick="removeChecklistItem(${idx})">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    function addChecklistItem() {
+        const input = document.getElementById('new-check-item');
+        if (!input || !input.value.trim()) return;
+        checklist.push(input.value.trim());
+        localStorage.setItem('etat-lieux', JSON.stringify(checklist));
+        input.value = '';
+        renderChecklist();
+    }
+
+    function removeChecklistItem(idx) {
+        checklist.splice(idx, 1);
+        localStorage.setItem('etat-lieux', JSON.stringify(checklist));
+        renderChecklist();
+    }
+
+    // ========== ONGLETS ==========
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        event.target.classList.add('active');
+        if (tab === 'coloc') renderColoc();
+        if (tab === 'checklist') renderChecklist();
+    }
+
+    // ========== INIT ==========
+    updateSolo();
+    renderColoc();
+    renderChecklist();
+</script>
+<script src="adsense-check.js"></script>
+<script src="save-manager.js"></script>
+</body>
+</html>

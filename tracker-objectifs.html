@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker d'Objectifs - CalculEtudiant</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="description" content="Suis tes objectifs académiques avec un tableau Kanban, des streaks et des célébrations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA;
+            --card: #FFFFFF;
+            --text: #1A1A2E;
+            --text-light: #6B7280;
+            --text-muted: #9CA3AF;
+            --primary: #FF6B35;
+            --primary-light: #FFF0E8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border: #E8E8EE;
+            --shadow: 0 2px 12px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        nav {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FF6B35, #FF8C42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
+
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #0F0F1A;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Stats */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+            transition: all var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
+
+        /* Kanban */
+        .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+        .kanban-column {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            min-height: 400px;
+        }
+        .kanban-column h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .kanban-column.todo h3 { color: #F59E0B; border-bottom-color: #F59E0B; }
+        .kanban-column.progress h3 { color: #2563EB; border-bottom-color: #2563EB; }
+        .kanban-column.done h3 { color: #10B981; border-bottom-color: #10B981; }
+
+        .kanban-count {
+            background: var(--border);
+            padding: 0.1rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* Objectif card */
+        .objectif-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            cursor: grab;
+            transition: all var(--transition);
+            position: relative;
+        }
+        .objectif-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .objectif-card:active { cursor: grabbing; }
+        .obj-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .obj-title { font-weight: 700; font-size: 0.9rem; flex: 1; color: var(--text); }
+        .obj-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; transition: all var(--transition); padding: 0.2rem; }
+        .obj-delete:hover { color: var(--danger); }
+        .obj-date { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .obj-progress { height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 0.5rem; }
+        .obj-progress-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+        .obj-subtasks { margin-top: 0.5rem; }
+        .subtask { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; font-size: 0.8rem; cursor: pointer; }
+        .subtask input[type="checkbox"] { accent-color: var(--success); width: 16px; height: 16px; cursor: pointer; }
+        .subtask.checked span { text-decoration: line-through; color: var(--text-muted); }
+
+        /* Add form */
+        .add-form { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); }
+        .add-form .input-group { margin-bottom: 0.8rem; }
+
+        /* Célébration */
+        .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+        .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s ease-out forwards; }
+        @keyframes confettiFall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+        /* XP Badge */
+        .xp-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: linear-gradient(135deg, #FFD23F, #FF9F1C); color: #000; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; }
+
+        /* AI Tip */
+        .ai-tip { background: linear-gradient(135deg, #FFF5F0, #FFF0E8); border: 1px solid rgba(255,107,53,0.2); border-radius: var(--radius); padding: 1rem 1.2rem; margin-top: 1.5rem; text-align: center; display: none; }
+        .ai-tip.show { display: block; animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .ai-tip p { font-size: 0.85rem; color: var(--text-light); }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        @media (max-width: 900px) { .kanban { grid-template-columns: 1fr; } .page-header h1 { font-size: 1.8rem; } }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">📚 CalculEtudiant</a>
+            <div style="display:flex;gap:1rem;align-items:center">
+                <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+                <div class="theme-selector">
+                    <button class="theme-toggle" id="themeToggle">🎨</button>
+                    <div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div>
+                </div>
+                <a href="index.html" class="back-link">← Retour</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Barre XP -->
+    <div class="xp-bar-container">
+        <span class="xp-label">🏆 Niveau</span>
+        <span class="xp-level" id="xp-level">🌟 Débutant</span>
+        <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+        <span class="xp-label" id="xp-text">0 / 100 XP</span>
+        <span class="xp-label" id="xp-streak">🔥 0</span>
+        <div class="xp-badges">
+            <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+            <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+            <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+            <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+            <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🎯 Tracker d'Objectifs</h1>
+            <p>Organise tes objectifs en Kanban, gagne de l'XP et célèbre tes réussites</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card"><div class="stat-value" style="color:#F59E0B" id="stat-todo">0</div><div class="stat-label">À faire</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:#2563EB" id="stat-progress">0</div><div class="stat-label">En cours</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:#10B981" id="stat-done">0</div><div class="stat-label">Terminés</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-xp">⭐ 0</div><div class="stat-label">XP Total</div></div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="add-form">
+            <div style="display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap">
+                <div class="input-group" style="flex:2;min-width:200px;margin-bottom:0">
+                    <label>🎯 Nouvel objectif</label>
+                    <input type="text" id="new-objectif" placeholder="Ex: Réviser le chapitre 5 de maths">
+                </div>
+                <div class="input-group" style="flex:1;min-width:150px;margin-bottom:0">
+                    <label>📅 Date limite</label>
+                    <input type="date" id="new-date">
+                </div>
+                <button class="btn-primary" style="width:auto;flex-shrink:0" onclick="addObjectif()">➕ Ajouter</button>
+            </div>
+        </div>
+
+        <!-- Kanban -->
+        <div class="kanban">
+            <!-- À faire -->
+            <div class="kanban-column todo" id="column-todo" ondragover="event.preventDefault()" ondrop="dropObjectif(event, 'todo')">
+                <h3>📋 À faire <span class="kanban-count" id="count-todo">0</span></h3>
+                <div id="list-todo"></div>
+            </div>
+
+            <!-- En cours -->
+            <div class="kanban-column progress" id="column-progress" ondragover="event.preventDefault()" ondrop="dropObjectif(event, 'progress')">
+                <h3>🚀 En cours <span class="kanban-count" id="count-progress">0</span></h3>
+                <div id="list-progress"></div>
+            </div>
+
+            <!-- Terminé -->
+            <div class="kanban-column done" id="column-done" ondragover="event.preventDefault()" ondrop="dropObjectif(event, 'done')">
+                <h3>✅ Terminé <span class="kanban-count" id="count-done">0</span></h3>
+                <div id="list-done"></div>
+            </div>
+        </div>
+
+        <!-- AI Tip -->
+        <div class="ai-tip" id="ai-tip">
+            <p id="ai-tip-text">💡 Conseil du coach...</p>
+        </div>
+    </div>
+
+    <!-- Confetti container -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    
+
+    <!-- Bannière ancrée discrète (fixe en bas de l'écran) -->
+    <ins class="adsbygoogle"
+         style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+         data-ad-slot="ANCHOR_SLOT"
+         data-ad-format="anchor"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+    <script src="adsense-check.js"></script>
+    <script src="save-manager.js"></script>
+</body>
+</html>

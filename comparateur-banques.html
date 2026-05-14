@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparateur Banques Étudiantes - CalculEtudiant</title>
+    <meta name="description" content="Compare les meilleures offres bancaires pour étudiants : frais, découvert, cartes gratuites.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .update-badge { display: inline-block; background: #ECFDF5; color: #059669; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+        .filter-chip { padding: 0.5rem 1.2rem; border-radius: 50px; border: 2px solid var(--border); background: var(--card); cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all var(--transition); }
+        .filter-chip.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .filter-chip:hover { border-color: var(--primary); }
+        .banque-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 2rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: 120px 1fr 200px; gap: 1.5rem; align-items: center;
+            transition: all var(--transition);
+        }
+        .banque-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .banque-logo { width: 100px; height: 100px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 3rem; background: var(--bg); }
+        .banque-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+        .banque-offer { font-size: 0.9rem; color: var(--success); font-weight: 600; margin-bottom: 0.5rem; }
+        .banque-details { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.85rem; color: var(--text-light); }
+        .banque-detail { display: flex; align-items: center; gap: 0.3rem; }
+        .banque-detail.good { color: var(--success); }
+        .banque-detail.warn { color: #F59E0B; }
+        .banque-score { text-align: center; }
+        .banque-score .score-num { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; color: var(--primary); }
+        .banque-score .score-label { font-size: 0.75rem; color: var(--text-light); }
+        .btn-ouvrir { display: inline-block; margin-top: 0.8rem; padding: 0.6rem 1.5rem; background: var(--primary); color: #FFF; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all var(--transition); }
+        .btn-ouvrir:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(var(--primaryRGB),0.3); }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem;
+            display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;
+            max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) { .banque-card { grid-template-columns: 1fr; text-align: center; } .banque-logo { margin: 0 auto; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🏦 Comparateur Banques Étudiantes <span class="update-badge" id="update-badge">Chargement...</span></h1>
+        <p>Compare les meilleures offres bancaires pour étudiants et ouvre un compte en quelques clics</p>
+    </div>
+
+    <div class="filter-row">
+        <button class="filter-chip active" data-filter="all" onclick="filterBanques('all', this)">🏦 Toutes</button>
+        <button class="filter-chip" data-filter="gratuit" onclick="filterBanques('gratuit', this)">🆓 100% Gratuites</button>
+        <button class="filter-chip" data-filter="prime" onclick="filterBanques('prime', this)">🎁 Prime offerte</button>
+        <button class="filter-chip" data-filter="mobile" onclick="filterBanques('mobile', this)">📱 Banque mobile</button>
+    </div>
+
+    <div id="banques-list"><div class="loading-state">⏳ Chargement des offres...</div></div>
+</div>
+
+<script>
+    let banquesData = [];
+    let currentFilter = 'all';
+
+    fetch('data.json')
+        .then(res => res.json())
+        .then(data => {
+            banquesData = data.banques;
+            document.getElementById('update-badge').textContent = `✅ Mis à jour le ${data.derniereMiseAJourGlobale}`;
+            renderBanques();
+        })
+        .catch(() => {
+            document.getElementById('update-badge').textContent = '⚠️ Données locales';
+            banquesData = [
+                { id:1, name:'BoursoBank', logo:'🏦', couleur:'#5C6BC0', offer:'Compte gratuit + 80€ offerts', score:9.2, details:[{text:'0€ de frais',type:'good'},{text:'Carte Visa gratuite',type:'good'},{text:'Découvert autorisé',type:'good'},{text:'80€ prime',type:'good'}], lien:'https://www.boursobank.com', tags:['gratuit','prime','mobile'], gratuit:true, prime:true, mobile:true },
+                { id:2, name:'Hello Bank!', logo:'🏦', couleur:'#8BC34A', offer:'Compte gratuit + 80€ offerts', score:8.8, details:[{text:'0€ de frais',type:'good'},{text:'Carte gratuite',type:'good'},{text:'Découvert selon profil',type:'warn'},{text:'80€ prime',type:'good'}], lien:'https://www.hello-bank.fr', tags:['gratuit','prime','mobile'], gratuit:true, prime:true, mobile:true },
+                { id:3, name:'Fortuneo', logo:'🏦', couleur:'#FF9800', offer:'Compte gratuit + 80€ à 150€', score:9.0, details:[{text:'0€ de frais',type:'good'},{text:'Carte Gold gratuite',type:'good'},{text:'Découvert selon profil',type:'warn'},{text:'Jusqu\'à 150€',type:'good'}], lien:'https://www.fortuneo.fr', tags:['gratuit','prime','mobile'], gratuit:true, prime:true, mobile:true }
+            ];
+            renderBanques();
+        });
+
+    function filterBanques(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderBanques();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function renderBanques() {
+        let filtered = banquesData;
+        if (currentFilter === 'gratuit') filtered = banquesData.filter(b => b.gratuit);
+        else if (currentFilter === 'prime') filtered = banquesData.filter(b => b.prime);
+        else if (currentFilter === 'mobile') filtered = banquesData.filter(b => b.mobile);
+        filtered.sort((a,b) => b.score - a.score);
+        const container = document.getElementById('banques-list');
+        container.innerHTML = filtered.map(b => `
+            <div class="banque-card">
+                <div class="banque-logo" style="background:${b.couleur}20">${b.logo}</div>
+                <div>
+                    <div class="banque-name">${b.name}</div>
+                    <div class="banque-offer">${b.offer}</div>
+                    <div class="banque-details">${b.details.map(d => `<span class="banque-detail ${d.type}">${d.type === 'good' ? '✅' : '⚠️'} ${d.text}</span>`).join('')}</div>
+                </div>
+                <div class="banque-score">
+                    <div class="score-num">${b.score}</div>
+                    <div class="score-label">/10</div>
+                    <a href="${b.lien}" target="_blank" class="btn-ouvrir">🔗 Ouvrir un compte</a>
+                </div>
+            </div>
+        `).join('');
+    }
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

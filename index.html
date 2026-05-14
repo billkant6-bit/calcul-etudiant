@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalculEtudiant - La boîte à outils pour réussir tes études</title>
+    <meta name="description" content="30+ outils gratuits pour gérer tes études, ton budget et tes révisions. Sans inscription.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        /* Styles spécifiques à l'index */
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        .hero {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 4rem 2rem 3rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before { content: ''; position: absolute; top: -40%; right: -20%; width: 700px; height: 700px; background: radial-gradient(circle, rgba(var(--primaryRGB),0.06) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+        .hero-content { position: relative; z-index: 1; }
+        .hero-badge { display: inline-block; background: rgba(var(--primaryRGB),0.08); color: var(--primary); padding: 0.35rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.8rem, 5vw, 4.2rem); font-weight: 800; line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 1.2rem; color: var(--text); }
+        .hero h1 .highlight { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero p { font-size: 1.1rem; color: var(--textSecondary); max-width: 500px; margin-bottom: 2rem; line-height: 1.7; }
+        .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .btn-primary-custom { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #FFF; padding: 0.9rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s; box-shadow: 0 4px 16px rgba(var(--primaryRGB),0.2); border: none; cursor: pointer; }
+        .btn-primary-custom:hover { background: var(--primaryHover); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(var(--primaryRGB),0.3); }
+        .btn-outline { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: var(--text); padding: 0.9rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.95rem; border: 2px solid var(--border); transition: all 0.3s; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(var(--primaryRGB),0.03); }
+        .hero-visual { position: relative; z-index: 1; display: flex; justify-content: center; align-items: center; }
+        .hero-images-stack { position: relative; width: 350px; height: 350px; }
+        .hero-circle { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; transition: all 0.3s; animation: float 6s ease-in-out infinite; }
+        .hero-circle:nth-child(1) { width: 140px; height: 140px; background: rgba(var(--primaryRGB),0.12); top: 10%; left: 10%; animation-delay: 0s; }
+        .hero-circle:nth-child(2) { width: 120px; height: 120px; background: rgba(37,99,235,0.1); top: 5%; right: 15%; animation-delay: -2s; }
+        .hero-circle:nth-child(3) { width: 160px; height: 160px; background: rgba(139,92,246,0.1); bottom: 10%; left: 20%; animation-delay: -4s; }
+        .hero-circle:nth-child(4) { width: 100px; height: 100px; background: rgba(16,185,129,0.1); bottom: 20%; right: 10%; animation-delay: -1s; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .stats { max-width: 1280px; margin: 0 auto 4rem; padding: 0 2rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        .stat-card { background: var(--card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border); text-align: center; transition: all 0.3s; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+        .stat-number { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--text); letter-spacing: -1px; }
+        .stat-label { color: var(--textSecondary); font-size: 0.9rem; margin-top: 0.3rem; }
+
+        .tools-section { max-width: 1280px; margin: 0 auto; padding: 3rem 2rem; }
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-header h2 { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin-bottom: 0.5rem; }
+        .section-header p { color: var(--textSecondary); font-size: 1rem; }
+
+        .dossiers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.8rem; }
+        .folder-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; transition: all 0.3s; }
+        .folder-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); border-color: var(--borderHover); }
+        .folder-card.open { border-color: var(--primary); box-shadow: 0 8px 30px rgba(var(--primaryRGB),0.12); }
+        .folder-header { padding: 1.8rem; display: flex; align-items: center; gap: 1.2rem; cursor: pointer; }
+        .folder-card.open .folder-header { background: var(--primaryLight); }
+        .folder-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; background: var(--bg); }
+        .folder-info { flex: 1; }
+        .folder-name { font-weight: 700; font-size: 1.05rem; color: var(--text); margin-bottom: 0.15rem; }
+        .folder-count { font-size: 0.8rem; color: var(--textSecondary); }
+        .folder-arrow { color: var(--textSecondary); transition: transform 0.3s; font-size: 0.9rem; }
+        .folder-card.open .folder-arrow { transform: rotate(180deg); color: var(--primary); }
+        .folder-apps { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .folder-card.open .folder-apps { max-height: 1000px; }
+        .apps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; padding: 0 1.5rem 1.5rem; }
+        .app-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1rem 0.5rem; border-radius: 12px; text-decoration: none; transition: all 0.3s; border: 1px solid transparent; color: var(--text); }
+        .app-item:hover { background: var(--primaryLight); border-color: var(--primary); transform: translateY(-2px); }
+        .app-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--bg); }
+        .app-name { font-size: 0.75rem; text-align: center; font-weight: 500; color: var(--textSecondary); }
+
+        .quick-access { max-width: 1280px; margin: 3rem auto; padding: 0 2rem; }
+        .quick-access h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; text-align: center; color: var(--textSecondary); margin-bottom: 1.2rem; }
+        .quick-grid { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
+        .quick-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--card); border: 1px solid var(--border); border-radius: 50px; text-decoration: none; color: var(--text); font-weight: 500; font-size: 0.85rem; transition: all 0.3s; }
+        .quick-item:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        footer { background: var(--card); border-top: 1px solid var(--border); padding: 4rem 2rem 2rem; margin-top: 4rem; }
+        .footer-content { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2.5rem; margin-bottom: 2.5rem; }
+        .footer-section h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--textSecondary); margin-bottom: 1rem; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 0.6rem; }
+        .footer-links a { color: var(--textSecondary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .footer-links a:hover { color: var(--primary); }
+        .footer-bottom { max-width: 1280px; margin: 0 auto; padding-top: 1.5rem; border-top: 1px solid var(--border); text-align: center; color: var(--textSecondary); font-size: 0.8rem; }
+
+        @media (max-width: 900px) { .hero { grid-template-columns: 1fr; text-align: center; gap: 2rem; } .hero-visual { display: none; } .nav-links { display: none; } .stats { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .apps-grid { grid-template-columns: repeat(2, 1fr); } .stats { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">📚 CalculEtudiant</a>
+            <ul class="nav-links">
+                <li><a href="#outils">Outils</a></li>
+                <li><a href="#" onclick="document.getElementById('folder-rev').classList.add('open');document.getElementById('folder-rev').scrollIntoView({behavior:'smooth'})">Révision</a></li>
+                <li><a href="#" onclick="document.getElementById('folder-deals').classList.add('open');document.getElementById('folder-deals').scrollIntoView({behavior:'smooth'})">Bons Plans</a></li>
+            </ul>
+            <div style="display:flex;gap:1rem;align-items:center">
+                <a href="mes-sauvegardes.html" class="btn-header" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+                <div class="theme-selector">
+                    <button class="theme-toggle" id="themeToggle">🎨</button>
+                    <div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Barre XP -->
+    <div class="xp-bar-container">
+        <span class="xp-label">🏆 Niveau</span>
+        <span class="xp-level" id="xp-level">🌟 Débutant</span>
+        <div class="xp-progress">
+            <div class="xp-progress-fill" id="xp-fill" style="width:0%"></div>
+        </div>
+        <span class="xp-label" id="xp-text">0 / 100 XP</span>
+        <span class="xp-label" id="xp-streak">🔥 0</span>
+        <div class="xp-badges">
+            <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+            <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+            <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+            <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+            <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+        </div>
+    </div>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🚀 30+ outils • 100% gratuit • Sans inscription</div>
+            <h1>Réussis tes études avec <span class="highlight">CalculEtudiant</span></h1>
+            <p>La plateforme tout-en-un qui te donne les outils pour gérer ta moyenne, ton budget, tes révisions, tes bons plans et bien plus.</p>
+            <div class="hero-cta">
+                <a href="#outils" class="btn-primary-custom">Explorer les outils →</a>
+                <a href="#" class="btn-outline" onclick="document.getElementById('folder-rev').classList.add('open');document.getElementById('folder-rev').scrollIntoView({behavior:'smooth'})">🧠 Révision & IA</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-images-stack">
+                <div class="hero-circle">📊</div>
+                <div class="hero-circle">🧠</div>
+                <div class="hero-circle">💡</div>
+                <div class="hero-circle">🎯</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats" id="stats">
+        <div class="stat-card"><div class="stat-number">30+</div><div class="stat-label">Outils gratuits</div></div>
+        <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Catégories</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-xp-total">⭐ 0</div><div class="stat-label">XP Total</div></div>
+        <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Thèmes</div></div>
+    </section>
+
+    <section class="tools-section" id="outils">
+        <div class="section-header">
+            <h2>Des outils pour chaque besoin</h2>
+            <p>Organisés par thèmes pour t'y retrouver facilement</p>
+        </div>
+        <div class="dossiers-grid">
+            <!-- Dossier 1 : Calculateurs & Finances -->
+            <div class="folder-card" id="folder-calc">
+                <div class="folder-header" onclick="toggleFolder('folder-calc')">
+                    <div class="folder-icon calc">🧮</div>
+                    <div class="folder-info"><div class="folder-name">Calculateurs & Finances</div><div class="folder-count">11 outils</div></div>
+                    <span class="folder-arrow">▼</span>
+                </div>
+                <div class="folder-apps">
+                    <div class="apps-grid">
+                        <a href="calculateur-moyenne.html" class="app-item"><div class="app-icon">📊</div><div class="app-name">Moyenne</div></a>
+                        <a href="simulateur-bourse.html" class="app-item"><div class="app-icon">💰</div><div class="app-name">Bourse</div></a>
+                        <a href="budget-colocation.html" class="app-item"><div class="app-icon">💵</div><div class="app-name">Budget & Coloc</div></a>
+                        <a href="ects-erasmus.html" class="app-item"><div class="app-icon">🔄</div><div class="app-name">ECTS & Erasmus</div></a>
+                        <a href="frais-scolarite.html" class="app-item"><div class="app-icon">🎓</div><div class="app-name">Frais & Logement</div></a>
+                        <a href="simulateur-alternance.html" class="app-item"><div class="app-icon">🔧</div><div class="app-name">Alternance</div></a>
+                        <a href="pret-etudiant.html" class="app-item"><div class="app-icon">🏦</div><div class="app-name">Prêt</div></a>
+                        <a href="salaire-debouches.html" class="app-item"><div class="app-icon">💼</div><div class="app-name">Salaire & Débouchés</div></a>
+                        <a href="calculateur-mention.html" class="app-item"><div class="app-icon">🏆</div><div class="app-name">Mention</div></a>
+                        <a href="calculateur-credit-impot.html" class="app-item"><div class="app-icon">💰</div><div class="app-name">Crédit Impôt</div></a>
+                        <a href="simulateur-reorientation.html" class="app-item"><div class="app-icon">🧭</div><div class="app-name">Réorientation</div></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dossier 2 : Planification & Productivité -->
+            <div class="folder-card" id="folder-plan">
+                <div class="folder-header" onclick="toggleFolder('folder-plan')">
+                    <div class="folder-icon plan">📅</div>
+                    <div class="folder-info"><div class="folder-name">Planification & Productivité</div><div class="folder-count">7 outils</div></div>
+                    <span class="folder-arrow">▼</span>
+                </div>
+                <div class="folder-apps">
+                    <div class="apps-grid">
+                        <a href="planning-revisions.html" class="app-item"><div class="app-icon">📅</div><div class="app-name">Planning</div></a>
+                        <a href="temps-revision.html" class="app-item"><div class="app-icon">⏱️</div><div class="app-name">Temps révision</div></a>
+                        <a href="puis-je-rater.html" class="app-item"><div class="app-icon">🎯</div><div class="app-name">Puis-je rater ?</div></a>
+                        <a href="tracker-objectifs.html" class="app-item"><div class="app-icon">🎯</div><div class="app-name">Objectifs</div></a>
+                        <a href="pomodoro.html" class="app-item"><div class="app-icon">🍅</div><div class="app-name">Pomodoro</div></a>
+                        <a href="todo-list.html" class="app-item"><div class="app-icon">📋</div><div class="app-name">To-Do List</div></a>
+                        <a href="dashboard.html" class="app-item"><div class="app-icon">📊</div><div class="app-name">Dashboard</div></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dossier 3 : Révision & IA -->
+            <div class="folder-card" id="folder-rev">
+                <div class="folder-header" onclick="toggleFolder('folder-rev')">
+                    <div class="folder-icon rev">🧠</div>
+                    <div class="folder-info"><div class="folder-name">Révision & IA</div><div class="folder-count">4 outils</div></div>
+                    <span class="folder-arrow">▼</span>
+                </div>
+                <div class="folder-apps">
+                    <div class="apps-grid">
+                        <a href="outils-revision.html" class="app-item"><div class="app-icon">📚</div><div class="app-name">Ressources externes</div></a>
+                        <a href="techniques-revision.html" class="app-item"><div class="app-icon">🧪</div><div class="app-name">Techniques & Prompts IA</div></a>
+                        <a href="chaines-youtube.html" class="app-item"><div class="app-icon">🎥</div><div class="app-name">Chaînes YouTube</div></a>
+                        <a href="organiseur-fiches.html" class="app-item"><div class="app-icon">🗂️</div><div class="app-name">Organiseur fiches</div></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dossier 4 : Bons Plans -->
+            <div class="folder-card" id="folder-deals">
+                <div class="folder-header" onclick="toggleFolder('folder-deals')">
+                    <div class="folder-icon deals">🛍️</div>
+                    <div class="folder-info"><div class="folder-name">Bons Plans</div><div class="folder-count">8 outils</div></div>
+                    <span class="folder-arrow">▼</span>
+                </div>
+                <div class="folder-apps">
+                    <div class="apps-grid">
+                        <a href="deals-sniper.html" class="app-item"><div class="app-icon">🎯</div><div class="app-name">Deals Sniper</div></a>
+                        <a href="comparateur-banques.html" class="app-item"><div class="app-icon">🏦</div><div class="app-name">Banques</div></a>
+                        <a href="comparateur-forfaits.html" class="app-item"><div class="app-icon">📱</div><div class="app-name">Forfaits</div></a>
+                        <a href="bons-plans-sorties.html" class="app-item"><div class="app-icon">🎟️</div><div class="app-name">Sorties & Culture</div></a>
+                        <a href="micro-taches.html" class="app-item"><div class="app-icon">💶</div><div class="app-name">Micro-tâches</div></a>
+                        <a href="comparateur-logement.html" class="app-item"><div class="app-icon">🏠</div><div class="app-name">Logement</div></a>
+                        <a href="comparateur-transport.html" class="app-item"><div class="app-icon">🚌</div><div class="app-name">Transport</div></a>
+                        <a href="reductions-etudiantes.html" class="app-item"><div class="app-icon">🏷️</div><div class="app-name">Réductions permanentes</div></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dossier 5 : Carrière & CV -->
+            <div class="folder-card" id="folder-career">
+                <div class="folder-header" onclick="toggleFolder('folder-career')">
+                    <div class="folder-icon career">🎯</div>
+                    <div class="folder-info"><div class="folder-name">Carrière & CV</div><div class="folder-count">2 outils</div></div>
+                    <span class="folder-arrow">▼</span>
+                </div>
+                <div class="folder-apps">
+                    <div class="apps-grid">
+                        <a href="cv-lettre-ia.html" class="app-item"><div class="app-icon">📄</div><div class="app-name">CV + Lettre</div></a>
+                        <a href="tracker-candidatures.html" class="app-item"><div class="app-icon">💼</div><div class="app-name">Candidatures</div></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-access">
+        <h3>⚡ Accès rapide</h3>
+        <div class="quick-grid">
+            <a href="calculateur-moyenne.html" class="quick-item">📊 Moyenne</a>
+            <a href="budget-colocation.html" class="quick-item">💵 Budget</a>
+            <a href="techniques-revision.html" class="quick-item">🧪 Révision IA</a>
+            <a href="planning-revisions.html" class="quick-item">📅 Planning</a>
+            <a href="pomodoro.html" class="quick-item">🍅 Pomodoro</a>
+            <a href="dashboard.html" class="quick-item">📊 Dashboard</a>
+            <a href="deals-sniper.html" class="quick-item">🎯 Deals</a>
+            <a href="reductions-etudiantes.html" class="quick-item">🏷️ Réductions</a>
+            <a href="mes-sauvegardes.html" class="quick-item">💾 Sauvegardes</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>CalculEtudiant</h3><ul class="footer-links"><li><a href="#outils">Tous les outils</a></li><li><a href="#" onclick="document.getElementById('folder-rev').classList.add('open');document.getElementById('folder-rev').scrollIntoView({behavior:'smooth'})">Révision & IA</a></li><li><a href="#" onclick="document.getElementById('folder-deals').classList.add('open');document.getElementById('folder-deals').scrollIntoView({behavior:'smooth'})">Bons Plans</a></li></ul></div>
+            <div class="footer-section"><h3>Ressources</h3><ul class="footer-links"><li><a href="FAQ.html">FAQ</a></li><li><a href="mes-sauvegardes.html">Sauvegardes</a></li><li><a href="cv-lettre-ia.html">CV + Lettre</a></li></ul></div>
+            <div class="footer-section"><h3>Légal</h3><ul class="footer-links"><li><a href="confidentialite.html">Confidentialité</a></li><li><a href="mentions-legales.html">Mentions légales</a></li><li><a href="404.html">Page introuvable</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>© 2026 CalculEtudiant — <span style="color:var(--primary)">Bill-Coats KANT</span></p></div>
+    </footer>
+
+    <script>
+        // Gestion des dossiers
+        function toggleFolder(id) {
+            const folder = document.getElementById(id);
+            folder.classList.toggle('open');
+        }
+
+        // Ouverture automatique du premier dossier
+        setTimeout(() => {
+            document.getElementById('folder-calc').classList.add('open');
+        }, 500);
+
+        // Gestion du thème (sélecteur) – already handled by theme-loader.js, but keep backup
+        document.addEventListener('DOMContentLoaded', function() {
+            const tg = document.querySelector('.theme-grid');
+            const tt = document.getElementById('themeToggle');
+            const tm = document.getElementById('themeMenu');
+
+            if (tg && tt && tm) {
+                // theme-loader.js already populated, but just in case
+                if (tg.children.length === 0 && typeof THEMES !== 'undefined') {
+                    Object.keys(THEMES).forEach(key => {
+                        const theme = THEMES[key];
+                        const btn = document.createElement('button');
+                        btn.className = 'theme-option';
+                        btn.dataset.theme = key;
+                        btn.innerHTML = `
+                            <div class="theme-colors">
+                                <div class="theme-color-swatch" style="background:${theme.colors.primary}"></div>
+                                <div class="theme-color-swatch" style="background:${theme.colors.accent || theme.colors.primaryLight}"></div>
+                            </div>
+                            <span>${theme.name}</span>
+                        `;
+                        btn.addEventListener('click', () => {
+                            applyTheme(key);
+                            tm.classList.remove('active');
+                        });
+                        tg.appendChild(btn);
+                    });
+                }
+
+                tt.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    tm.classList.toggle('active');
+                });
+
+                document.addEventListener('click', () => {
+                    tm.classList.remove('active');
+                });
+            }
+        });
+
+        // ========== SYSTÈME XP ==========
+        function getXP() { return parseInt(localStorage.getItem('xp-global') || '0'); }
+        function getLevel(xp) { 
+            const levels = [
+                { min: 0, name: '🌟 Débutant' },
+                { min: 100, name: '📚 Apprenti' },
+                { min: 300, name: '🎓 Étudiant' },
+                { min: 600, name: '💪 Acharné' },
+                { min: 1000, name: '🧠 Expert' },
+                { min: 1500, name: '🏆 Master' },
+                { min: 2000, name: '👑 Légende' }
+            ];
+            let level = levels[0];
+            for (let i = levels.length - 1; i >= 0; i--) {
+                if (xp >= levels[i].min) { level = levels[i]; break; }
+            }
+            return level;
+        }
+        function updateXPBar() {
+            const xp = getXP();
+            const level = getLevel(xp);
+            const xpInLevel = xp - level.min;
+            const nextLevel = level.min + 100;
+            const progress = Math.min(100, Math.floor((xpInLevel / 100) * 100));
+            document.getElementById('xp-level').textContent = level.name;
+            document.getElementById('xp-fill').style.width = progress + '%';
+            document.getElementById('xp-text').textContent = `${xpInLevel} / 100 XP`;
+            document.getElementById('stat-xp-total').textContent = `⭐ ${xp}`;
+            
+            // Badges (simulation)
+            const badges = ['badge-fiches', 'badge-quiz', 'badge-pomodoro', 'badge-objectifs', 'badge-streak'];
+            badges.forEach(badge => {
+                const el = document.getElementById(badge);
+                if (el && Math.random() > 0.8) el.classList.add('unlocked');
+            });
+        }
+        updateXPBar();
+        window.addXP = function(points) {
+            let xp = getXP() + points;
+            localStorage.setItem('xp-global', xp);
+            updateXPBar();
+        };
+    </script>
+    
+    <!-- Bannière ancrée discrète (fixe en bas de l'écran) -->
+    <ins class="adsbygoogle"
+         style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+         data-ad-slot="ANCHOR_SLOT"
+         data-ad-format="anchor"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+    
+    <script src="adsense-check.js"></script>
+</body>
+</html>

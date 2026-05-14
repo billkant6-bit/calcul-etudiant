@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réductions Étudiantes Permanentes - CalculEtudiant</title>
+    <meta name="description" content="Toutes les réductions étudiantes à jour : high-tech, mode, streaming, transports, logiciels.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280; --text-muted: #9CA3AF;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Sélecteur de thème */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Filtres */
+        .filter-bar {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2rem;
+        }
+        .filter-btn {
+            background: var(--bg); border: 2px solid var(--border); padding: 0.5rem 1.2rem;
+            border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            transition: all var(--transition); white-space: nowrap;
+        }
+        .filter-btn:hover, .filter-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        .reductions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .reduction-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;
+            transition: all var(--transition); position: relative;
+        }
+        .reduction-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .reduction-header { display: flex; align-items: center; gap: 1rem; }
+        .reduction-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .reduction-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .reduction-category { font-size: 0.75rem; color: var(--primary); font-weight: 600; }
+        .reduction-desc { font-size: 0.9rem; color: var(--text-light); line-height: 1.5; }
+        .reduction-link {
+            display: inline-block; margin-top: auto; padding: 0.5rem 1rem; background: var(--primary-light); color: var(--primary);
+            border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.85rem; text-align: center;
+            transition: all var(--transition);
+        }
+        .reduction-link:hover { background: var(--primary); color: #FFF; }
+        .top-partner { border-left: 4px solid #FFD23F; }
+        .no-results { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .reductions-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🏷️ Réductions Étudiantes Permanentes</h1>
+        <p>Profite des meilleures offres toute l'année : high-tech, streaming, mode, transports...</p>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filter-bar" id="filter-bar"></div>
+
+    <!-- Grille des réductions -->
+    <div class="reductions-grid" id="reductions-grid"></div>
+    <div class="no-results" id="no-results" style="display:none">Aucune réduction trouvée pour cette catégorie.</div>
+</div>
+
+<!-- Bannière ancrée -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+
+<script>
+    // Données des réductions (catégorie, icône, nom, description, lien affilié)
+    const reductions = [
+        { category: "High-tech", icon: "🍎", name: "Apple Education", desc: "MacBook, iPad à prix réduit + 20% sur AppleCare.", link: "https://www.apple.com/fr/education/", top: true },
+        { category: "High-tech", icon: "💻", name: "Microsoft Store Étudiant", desc: "Surface, Windows, Office 365 à prix réduit.", link: "https://www.microsoft.com/fr-fr/education", top: true },
+        { category: "High-tech", icon: "🎧", name: "Samsung Student", desc: "Jusqu'à -30% sur smartphones, tablettes, écouteurs.", link: "https://www.samsung.com/fr/offer/student/", top: false },
+        { category: "Logiciels", icon: "🎨", name: "Adobe Creative Cloud", desc: "65% de réduction pour les étudiants sur la suite créative.", link: "https://www.adobe.com/fr/creativecloud/buy/students.html", top: true },
+        { category: "Logiciels", icon: "🎵", name: "Ableton Live", desc: "50% sur le logiciel de production musicale.", link: "https://www.ableton.com/fr/shop/education/", top: false },
+        { category: "Streaming", icon: "🎵", name: "Spotify Premium Étudiant", desc: "Premium à 5,99€/mois + accès à Hulu (US).", link: "https://www.spotify.com/fr/student/", top: true },
+        { category: "Streaming", icon: "🎬", name: "Apple Music Étudiant", desc: "5,99€/mois + Apple TV+ offert.", link: "https://www.apple.com/fr/apple-music/", top: false },
+        { category: "Streaming", icon: "📺", name: "Prime Video Étudiant", desc: "Amazon Prime à -50% : 3,49€/mois.", link: "https://www.amazon.fr/gp/student/signup", top: false },
+        { category: "Mode", icon: "👗", name: "ASOS Student", desc: "10% de réduction permanente sur tout le site.", link: "https://www.asos.com/fr/student-discount/", top: false },
+        { category: "Mode", icon: "👟", name: "Nike Student", desc: "10% de réduction pour les étudiants.", link: "https://www.nike.com/fr/student-discount", top: false },
+        { category: "Mode", icon: "👜", name: "Zalando Student Club", desc: "Livraison express gratuite et ventes privées.", link: "https://www.zalando.fr/student/", top: false },
+        { category: "Restauration", icon: "🍔", name: "McDonald's Étudiant", desc: "Offres spéciales avec la carte étudiante ISIC.", link: "https://www.mcdonalds.fr/", top: false },
+        { category: "Restauration", icon: "🥪", name: "Subway Étudiant", desc: "Menu étudiant à prix réduit dans les restaurants participants.", link: "https://www.subway.com/fr-fr", top: false },
+        { category: "Transports", icon: "🚆", name: "SNCF Jeune", desc: "Carte Avantage Jeune : -30% sur les TGV et Intercités.", link: "https://www.sncf-connect.com/carte-avantage-jeune", top: true },
+        { category: "Transports", icon: "🚌", name: "FlixBus Student", desc: "15% de réduction sur tous les trajets en bus.", link: "https://www.flixbus.fr/student-discount", top: false },
+        { category: "Transports", icon: "🚴", name: "Vélib' Métropole", desc: "Abonnement Vélib' à tarif réduit pour les étudiants.", link: "https://www.velib-metropole.fr/abonnements/tarifs-reduits", top: false },
+        { category: "Culture", icon: "🎟️", name: "Pass Culture", desc: "300€ offerts à 18 ans pour des biens culturels.", link: "https://pass.culture.fr/", top: true },
+        { category: "Culture", icon: "📚", name: "Fnac Étudiant", desc: "Carte Fnac+ à 4,99€/mois avec -10% sur les livres.", link: "https://www.fnac.com/carte-fnac-plus", top: false },
+        { category: "Culture", icon: "🎥", name: "UGC Illimité -26 ans", desc: "Cinéma illimité à 17,90€/mois.", link: "https://www.ugc.fr/", top: false },
+        { category: "Culture", icon: "🏛️", name: "Musées Nationaux Gratuits", desc: "Gratuité pour les -26 ans de l'UE dans les musées nationaux.", link: "https://www.culture.gouv.fr/", top: true },
+        { category: "Abonnements", icon: "📰", name: "Le Monde Campus", desc: "Abonnement numérique à prix étudiant.", link: "https://www.lemonde.fr/campus/", top: false },
+        { category: "Abonnements", icon: "📖", name: "Cafeyn Étudiant", desc: "Accès illimité à 2000 magazines pour 3,99€/mois.", link: "https://www.cafeyn.co/student", top: false }
+    ];
+
+    const categories = ["Toutes", "High-tech", "Logiciels", "Streaming", "Mode", "Restauration", "Transports", "Culture", "Abonnements"];
+    let currentFilter = "Toutes";
+
+    function buildFilters() {
+        const bar = document.getElementById('filter-bar');
+        bar.innerHTML = categories.map(cat => 
+            `<button class="filter-btn ${cat === currentFilter ? 'active' : ''}" onclick="filterCategory('${cat}', this)">${cat === 'Toutes' ? '🔥 Toutes' : cat}</button>`
+        ).join('');
+    }
+
+    function filterCategory(cat, btn) {
+        currentFilter = cat;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderReductions();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function renderReductions() {
+        const grid = document.getElementById('reductions-grid');
+        const noResults = document.getElementById('no-results');
+        let filtered = currentFilter === 'Toutes' ? reductions : reductions.filter(r => r.category === currentFilter);
+        if (filtered.length === 0) {
+            grid.innerHTML = '';
+            noResults.style.display = 'block';
+            return;
+        }
+        noResults.style.display = 'none';
+        grid.innerHTML = filtered.map(r => `
+            <div class="reduction-card ${r.top ? 'top-partner' : ''}">
+                <div class="reduction-header">
+                    <div class="reduction-icon">${r.icon}</div>
+                    <div>
+                        <div class="reduction-name">${r.name}</div>
+                        <div class="reduction-category">${r.category}</div>
+                    </div>
+                </div>
+                <p class="reduction-desc">${r.desc}</p>
+                <a href="${r.link}" target="_blank" class="reduction-link">🔗 Profiter de l'offre</a>
+            </div>
+        `).join('');
+    }
+
+    buildFilters();
+    renderReductions();
+</script>
+</body>
+</html>

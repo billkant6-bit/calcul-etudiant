@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparateur Forfaits Étudiants - CalculEtudiant</title>
+    <meta name="description" content="Compare les meilleurs forfaits mobile et internet pour étudiants. Économise jusqu'à 50%.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .update-badge { display: inline-block; background: #ECFDF5; color: #059669; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); justify-content: center; }
+        .tab { background: none; border: none; padding: 0.8rem 1.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; transition: all var(--transition); }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInUp 0.4s ease-out; }
+        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        .filter-chip { padding: 0.5rem 1.2rem; border-radius: 50px; border: 2px solid var(--border); background: var(--card); cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all var(--transition); }
+        .filter-chip.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .forfait-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 2rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: 100px 1fr 180px; gap: 1.5rem; align-items: center;
+            transition: all var(--transition);
+            position: relative;
+        }
+        .forfait-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .forfait-card.best { border: 2px solid #FFD23F; }
+        .forfait-card.best::before { content: '⭐ Meilleur rapport qualité/prix'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #FFD23F, #FF9F1C); color: #000; padding: 0.3rem 1.5rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; white-space: nowrap; }
+        .forfait-logo { width: 80px; height: 80px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; background: var(--bg); }
+        .forfait-name { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+        .forfait-price { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary); text-align: center; }
+        .forfait-price .periode { font-size: 0.7rem; color: var(--text-light); display: block; }
+        .forfait-details { display: flex; flex-wrap: wrap; gap: 0.8rem; font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; }
+        .forfait-detail { display: flex; align-items: center; gap: 0.3rem; background: var(--bg); padding: 0.3rem 0.7rem; border-radius: 20px; }
+        .btn-choisir { display: inline-block; margin-top: 0.5rem; padding: 0.6rem 1.5rem; background: var(--primary); color: #FFF; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all var(--transition); text-align: center; }
+        .btn-choisir:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(var(--primaryRGB),0.3); }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem;
+            display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;
+            max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .forfait-card { grid-template-columns: 1fr; text-align: center; } .forfait-logo { margin: 0 auto; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>📱 Comparateur Forfaits Étudiants <span class="update-badge" id="update-badge">Chargement...</span></h1>
+        <p>Les meilleurs forfaits mobile et box internet avec réductions étudiantes</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('mobile', this)">📱 Forfaits Mobile</button>
+        <button class="tab" onclick="switchTab('internet', this)">🌐 Box Internet</button>
+    </div>
+
+    <div class="filter-row" id="filter-row">
+        <button class="filter-chip active" data-filter="all" onclick="filterForfaits('all', this)">📋 Tous</button>
+        <button class="filter-chip" data-filter="pas-cher" onclick="filterForfaits('pas-cher', this)">💰 Pas cher (-10€)</button>
+        <button class="filter-chip" data-filter="illimite" onclick="filterForfaits('illimite', this)">📶 Data illimitée</button>
+        <button class="filter-chip" data-filter="5g" onclick="filterForfaits('5g', this)">⚡ 5G</button>
+    </div>
+
+    <div id="tab-mobile" class="tab-content active">
+        <div id="forfaits-mobile-list"><div class="loading-state">⏳ Chargement des forfaits...</div></div>
+    </div>
+    <div id="tab-internet" class="tab-content">
+        <div id="forfaits-internet-list"><div class="loading-state">⏳ Chargement des forfaits...</div></div>
+    </div>
+</div>
+
+<script>
+    let forfaitsMobile = [], forfaitsInternet = [];
+    let currentTab = 'mobile', currentFilter = 'all';
+
+    fetch('data.json')
+        .then(res => res.json())
+        .then(data => {
+            forfaitsMobile = data.forfaitsMobile;
+            forfaitsInternet = data.forfaitsInternet;
+            document.getElementById('update-badge').textContent = `✅ Mis à jour le ${data.derniereMiseAJourGlobale}`;
+            renderForfaits();
+        })
+        .catch(() => {
+            document.getElementById('update-badge').textContent = '⚠️ Données locales';
+            forfaitsMobile = [
+                { id:1, name:'Free', logo:'📱', couleur:'#E53935', prix:9.99, data:'150 Go 5G', appelle:'Illimités', engagement:'Sans engagement', lien:'https://www.free.fr', best:true, tags:['all','pas-cher','5g'] },
+                { id:2, name:'Sosh (Orange)', logo:'📱', couleur:'#FF9800', prix:10.99, data:'100 Go 5G', appelle:'Illimités', engagement:'Sans engagement', lien:'https://www.sosh.fr', best:false, tags:['all','pas-cher','5g'] },
+                { id:3, name:'B&You (Bouygues)', logo:'📱', couleur:'#2196F3', prix:9.99, data:'50 Go 5G', appelle:'Illimités', engagement:'Sans engagement', lien:'https://www.bouyguestelecom.fr', best:false, tags:['all','pas-cher','5g'] }
+            ];
+            forfaitsInternet = [
+                { id:1, name:'Freebox Pop', logo:'🌐', couleur:'#E53935', prix:29.99, data:'Fibre 5 Gb/s', appelle:'Illimités', engagement:'Sans engagement', lien:'https://www.free.fr', best:true, tags:['all'] },
+                { id:2, name:'Sosh Fibre', logo:'🌐', couleur:'#FF9800', prix:19.99, data:'Fibre 300 Mb/s', appelle:'Illimités', engagement:'Sans engagement', lien:'https://www.sosh.fr', best:false, tags:['all','pas-cher'] }
+            ];
+            renderForfaits();
+        });
+
+    function switchTab(tab, btn) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        renderForfaits();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function filterForfaits(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderForfaits();
+    }
+
+    function renderForfaits() {
+        const data = currentTab === 'mobile' ? forfaitsMobile : forfaitsInternet;
+        let filtered = currentFilter === 'all' ? data : data.filter(f => f.tags.includes(currentFilter));
+        const containerId = currentTab === 'mobile' ? 'forfaits-mobile-list' : 'forfaits-internet-list';
+        document.getElementById(containerId).innerHTML = filtered.map(f => `
+            <div class="forfait-card ${f.best ? 'best' : ''}">
+                <div class="forfait-logo" style="background:${f.couleur}20">${f.logo}</div>
+                <div>
+                    <div class="forfait-name">${f.name}</div>
+                    <div class="forfait-details">
+                        <span class="forfait-detail">📶 ${f.data}</span>
+                        <span class="forfait-detail">📞 ${f.appelle}</span>
+                        <span class="forfait-detail">📝 ${f.engagement}</span>
+                    </div>
+                </div>
+                <div style="text-align:center">
+                    <div class="forfait-price">${f.prix.toFixed(2)}€<span class="periode">/mois</span></div>
+                    <a href="${f.lien}" target="_blank" class="btn-choisir">🔗 Voir l'offre</a>
+                </div>
+            </div>
+        `).join('');
+    }
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

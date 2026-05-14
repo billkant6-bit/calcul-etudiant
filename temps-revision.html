@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temps de Révision - CalculEtudiant</title>
+    <meta name="description" content="Calcule ton temps de révision idéal avec des graphiques et l'aide de l'IA.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .level-selector { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .level-btn {
+            flex: 1;
+            padding: 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card);
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all var(--transition);
+        }
+        .level-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .level-btn:hover { border-color: var(--primary); }
+
+        .gauge-wrapper { display: flex; justify-content: center; margin: 1.5rem 0; }
+        .gauge { position: relative; width: 200px; height: 200px; }
+        .gauge svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .gauge-bg { fill: none; stroke: var(--border); stroke-width: 12; }
+        .gauge-fill { fill: none; stroke: var(--primary); stroke-width: 12; stroke-linecap: round; transition: all 1s ease; }
+        .gauge-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .gauge-value { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; color: var(--text); }
+        .gauge-label { font-size: 0.8rem; color: var(--text-light); }
+
+        .bar-chart { display: flex; align-items: flex-end; gap: 1rem; height: 200px; padding: 1rem 0; }
+        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .bar { width: 100%; border-radius: 10px 10px 0 0; transition: all 0.8s ease; min-height: 4px; background: var(--primary); }
+        .bar-label { font-size: 0.75rem; font-weight: 600; color: var(--text-light); }
+        .bar-value { font-size: 0.7rem; font-weight: 700; color: var(--text); }
+
+        .matiere-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+        .matiere-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .matiere-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
+        .matiere-hours { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+
+        .ai-insight {
+            background: linear-gradient(135deg, #FFF5F0, #FFF0E8);
+            border: 1px solid rgba(var(--primaryRGB),0.2);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: none;
+        }
+        .ai-insight.show { display: block; animation: fadeInUp 0.5s ease-out; }
+        .ai-insight h3 { font-family: 'Syne', sans-serif; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .ai-insight p { color: var(--text-light); line-height: 1.7; font-size: 0.95rem; }
+
+        .verdict-box { text-align: center; margin-top: 1rem; padding: 1rem; border-radius: var(--radius-sm); }
+        .verdict-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .gauge { width: 160px; height: 160px; }
+            .gauge-value { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>⏱️ Calculateur de Révisions</h1>
+        <p>Estime le temps nécessaire et optimise ton planning de révisions</p>
+    </div>
+
+    <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+        <div class="card">
+            <h2 class="section-title">📊 Paramètres</h2>
+            <div class="level-selector">
+                <button class="level-btn active" data-level="debutant" onclick="changeLevel(this)">🌱 Débutant</button>
+                <button class="level-btn" data-level="intermediaire" onclick="changeLevel(this)">📚 Intermédiaire</button>
+                <button class="level-btn" data-level="avance" onclick="changeLevel(this)">🚀 Avancé</button>
+            </div>
+
+            <div class="matiere-row">
+                <div class="matiere-color" style="background:#FF6B35"></div>
+                <span class="matiere-name">Maths</span>
+                <input type="number" class="note-input" id="matieres-maths" value="4" min="1" max="10" style="width:60px;padding:0.4rem;border:2px solid var(--border);border-radius:8px;text-align:center;font-weight:600" oninput="updateAll()">
+                <span style="font-size:0.8rem;color:var(--text-light)">chapitres</span>
+            </div>
+            <div class="matiere-row">
+                <div class="matiere-color" style="background:#2563EB"></div>
+                <span class="matiere-name">Physique</span>
+                <input type="number" class="note-input" id="matieres-physique" value="3" min="1" max="10" style="width:60px;padding:0.4rem;border:2px solid var(--border);border-radius:8px;text-align:center;font-weight:600" oninput="updateAll()">
+                <span style="font-size:0.8rem;color:var(--text-light)">chapitres</span>
+            </div>
+            <div class="matiere-row">
+                <div class="matiere-color" style="background:#7C3AED"></div>
+                <span class="matiere-name">Informatique</span>
+                <input type="number" class="note-input" id="matieres-info" value="5" min="1" max="10" style="width:60px;padding:0.4rem;border:2px solid var(--border);border-radius:8px;text-align:center;font-weight:600" oninput="updateAll()">
+                <span style="font-size:0.8rem;color:var(--text-light)">chapitres</span>
+            </div>
+
+            <div class="input-group" style="margin-top:1.5rem">
+                <label>⏰ Heures dispo / jour</label>
+                <input type="range" id="heures-jour" min="1" max="10" value="4" oninput="updateAll()">
+                <span id="heures-jour-value" style="font-weight:700;color:var(--primary)">4h</span>
+            </div>
+            <div class="input-group">
+                <label>📅 Jours avant les exams</label>
+                <input type="range" id="jours-restants" min="1" max="60" value="21" oninput="updateAll()">
+                <span id="jours-value" style="font-weight:700;color:var(--primary)">21 jours</span>
+            </div>
+            <div class="input-group">
+                <label>🎯 Objectif (/20)</label>
+                <input type="range" id="objectif" min="8" max="18" value="14" oninput="updateAll()">
+                <span id="objectif-value" style="font-weight:700;color:var(--primary)">14/20</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">📈 Résultats</h2>
+            <div class="gauge-wrapper">
+                <div class="gauge">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="gauge-bg" cx="50" cy="50" r="42"/>
+                        <circle class="gauge-fill" id="gauge-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/>
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="gauge-value" id="gauge-value">0h</div>
+                        <div class="gauge-label">Total estimé</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bar-chart" id="bar-chart"></div>
+            <div id="temps-matieres"></div>
+            <div class="verdict-box" id="verdict-box">
+                <span class="verdict-text" id="verdict-text">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-insight" id="ai-insight">
+        <h3>🤖 Stratégie de révision</h3>
+        <p id="ai-insight-text"></p>
+    </div>
+</div>
+
+<script>
+    const GEMINI_KEY = (() => { const k = 'QUl6YVN5REN5a0gyOEt' + 'sNDBQdWhGZU44RXhPTldj' + 'S3FEQVNIZkVn'; return atob(k); })();
+    let currentLevel = 'debutant';
+    const levelMultipliers = { debutant: 2.5, intermediaire: 1.8, avance: 1.2 };
+    const colors = ['#FF6B35', '#2563EB', '#7C3AED'];
+    const matieres = ['Maths', 'Physique', 'Informatique'];
+
+    function changeLevel(btn) {
+        document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentLevel = btn.dataset.level;
+        updateAll();
+    }
+
+    function updateAll() {
+        const chapitres = [
+            parseInt(document.getElementById('matieres-maths').value) || 0,
+            parseInt(document.getElementById('matieres-physique').value) || 0,
+            parseInt(document.getElementById('matieres-info').value) || 0
+        ];
+        const heuresJour = parseInt(document.getElementById('heures-jour').value);
+        const jours = parseInt(document.getElementById('jours-restants').value);
+        const objectif = parseInt(document.getElementById('objectif').value);
+
+        document.getElementById('heures-jour-value').textContent = heuresJour + 'h';
+        document.getElementById('jours-value').textContent = jours + ' jours';
+        document.getElementById('objectif-value').textContent = objectif + '/20';
+
+        const multiplicateur = levelMultipliers[currentLevel];
+        const objectifMultiplier = 1 + (objectif - 10) / 20;
+        const tempsParMatiere = chapitres.map(c => Math.round(c * multiplicateur * objectifMultiplier * 10) / 10);
+        const tempsTotal = tempsParMatiere.reduce((a, b) => a + b, 0);
+        const capacite = heuresJour * jours;
+
+        const circumference = 264;
+        const ratio = Math.min(1, tempsTotal / (capacite || 1));
+        const offset = circumference * (1 - ratio);
+        const gauge = document.getElementById('gauge-fill');
+        gauge.setAttribute('stroke-dashoffset', offset);
+        gauge.setAttribute('stroke', tempsTotal <= capacite ? '#10B981' : tempsTotal <= capacite * 1.3 ? '#F59E0B' : '#EF4444');
+        document.getElementById('gauge-value').textContent = tempsTotal.toFixed(1) + 'h';
+
+        const maxChap = Math.max(...chapitres, 1);
+        const barContainer = document.getElementById('bar-chart');
+        barContainer.innerHTML = chapitres.map((c, i) => `
+            <div class="bar-col">
+                <div class="bar-value">${tempsParMatiere[i]}h</div>
+                <div class="bar" style="height:${(c / maxChap) * 150}px;background:${colors[i]}"></div>
+                <div class="bar-label">${matieres[i]}</div>
+            </div>
+        `).join('');
+
+        const tempsContainer = document.getElementById('temps-matieres');
+        tempsContainer.innerHTML = matieres.map((m, i) => `
+            <div class="breakdown-item" style="border-left-color:${colors[i]}">
+                <span>${m} (${chapitres[i]} chap.)</span>
+                <span class="breakdown-amount" style="color:${colors[i]}">${tempsParMatiere[i].toFixed(1)}h</span>
+            </div>
+        `).join('');
+
+        const verdictBox = document.getElementById('verdict-box');
+        const verdictText = document.getElementById('verdict-text');
+        if (tempsTotal <= capacite) {
+            verdictBox.style.background = '#ECFDF5';
+            verdictText.textContent = `✅ Tu as assez de temps ! (${capacite}h dispo)`;
+            verdictText.style.color = '#10B981';
+        } else if (tempsTotal <= capacite * 1.3) {
+            verdictBox.style.background = '#FFFBEB';
+            verdictText.textContent = `⚠️ C'est serré... Il te manque ${(tempsTotal - capacite).toFixed(1)}h`;
+            verdictText.style.color = '#F59E0B';
+        } else {
+            verdictBox.style.background = '#FEF2F2';
+            verdictText.textContent = `❌ Impossible ! Il te manque ${(tempsTotal - capacite).toFixed(1)}h. Révise ton objectif.`;
+            verdictText.style.color = '#EF4444';
+        }
+
+        if (tempsTotal > capacite * 0.5) getAIInsight(tempsTotal, capacite, tempsParMatiere, chapitres);
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    async function getAIInsight(total, capacite, tempsParMatiere, chapitres) {
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Un étudiant doit réviser : Maths (${chapitres[0]} chap, ${tempsParMatiere[0].toFixed(1)}h), Physique (${chapitres[1]} chap, ${tempsParMatiere[1].toFixed(1)}h), Informatique (${chapitres[2]} chap, ${tempsParMatiere[2].toFixed(1)}h). Total : ${total.toFixed(1)}h, capacité : ${capacite}h. Donne UN conseil stratégique court (2-3 phrases) pour bien répartir ce temps.` }] }] })
+            });
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Priorise les matières à plus gros coefficient et alterne les sessions pour éviter la fatigue.";
+            document.getElementById('ai-insight-text').textContent = text;
+            document.getElementById('ai-insight').classList.add('show');
+        } catch(e) {
+            document.getElementById('ai-insight-text').textContent = "💡 Conseil : commence par les chapitres les plus difficiles le matin, garde les révisions légères pour le soir.";
+            document.getElementById('ai-insight').classList.add('show');
+        }
+    }
+
+    updateAll();
+</script>
+<script src="adsense-check.js"></script>
+<script src="save-manager.js"></script>
+</body>
+</html>

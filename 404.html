@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page introuvable - CalculEtudiant</title>
+    <meta name="description" content="Oups ! Cette page n'existe pas. Retourne à l'accueil de CalculEtudiant.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .error-container { text-align: center; padding: 4rem 2rem; max-width: 600px; margin: 0 auto; }
+        .error-code { font-family: 'Syne', sans-serif; font-size: 8rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+        .error-emoji { font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .error-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700; margin: 1rem 0; color: var(--text); }
+        .error-message { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.6; }
+        .error-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn-home { display: inline-block; background: var(--gradient); color: #FFF; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+        .btn-home:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(var(--primaryRGB),0.4); }
+        .btn-save { display: inline-block; background: var(--card); color: var(--text); padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 600; border: 2px solid var(--border); transition: all 0.3s; }
+        .btn-save:hover { border-color: var(--primary); background: var(--primary-light); }
+        .quick-links { margin-top: 3rem; }
+        .quick-links p { color: var(--text-secondary); margin-bottom: 1rem; }
+        .quick-links-grid { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
+        .quick-link { padding: 0.5rem 1rem; background: var(--card); border-radius: 50px; color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; border: 1px solid var(--border); transition: all 0.3s; }
+        .quick-link:hover { border-color: var(--primary); color: var(--primary); }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;
+            max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges"><span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span><span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span><span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span><span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span><span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span></div>
+</div>
+<div class="container">
+    <div class="error-container">
+        <div class="error-emoji">🔍</div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page introuvable</h1>
+        <p class="error-message">La page que tu cherches a été déplacée, supprimée, ou n'a jamais existé.<br>Mais pas de panique, tous nos outils sont là !</p>
+        <div class="error-actions">
+            <a href="index.html" class="btn-home">🏠 Retour à l'accueil</a>
+            <a href="mes-sauvegardes.html" class="btn-save">💾 Mes Sauvegardes</a>
+        </div>
+        <div class="quick-links">
+            <p>Ou accède directement à un outil :</p>
+            <div class="quick-links-grid">
+                <a href="calculateur-moyenne.html" class="quick-link">📊 Moyenne</a>
+                <a href="budget-colocation.html" class="quick-link">💵 Budget</a>
+                <a href="generateur-quiz.html" class="quick-link">❓ Quiz</a>
+                <a href="cv-lettre-ia.html" class="quick-link">📄 CV</a>
+                <a href="planning-revisions.html" class="quick-link">📅 Planning</a>
+                <a href="pomodoro.html" class="quick-link">🍅 Pomodoro</a>
+                <a href="deals-sniper.html" class="quick-link">🎯 Deals</a>
+                <a href="outils-revision.html" class="quick-link">🧠 Révision</a>
+            </div>
+        </div>
+    </div>
+</div>
+<footer><p>© 2026 CalculEtudiant - Erreur 404</p></footer>
+<script src="adsense-check.js"></script>
+</body>
+</html>

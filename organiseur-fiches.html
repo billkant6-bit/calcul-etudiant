@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organiseur de Fiches - CalculEtudiant</title>
+    <meta name="description" content="Gère tes fiches de révision par matière, avec tags, recherche et dossiers.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .organizer-layout { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; }
+        .sidebar {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.5rem; position: sticky; top: 100px; height: fit-content;
+        }
+        .sidebar h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+        .matiere-list { list-style: none; }
+        .matiere-list li { margin-bottom: 0.3rem; }
+        .matiere-list a {
+            display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm); color: var(--text-light); text-decoration: none;
+            font-weight: 500; font-size: 0.9rem; transition: all var(--transition);
+        }
+        .matiere-list a:hover, .matiere-list a.active { background: var(--primary-light); color: var(--primary); }
+        .matiere-list .badge { margin-left: auto; background: var(--border); padding: 0.1rem 0.5rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+        .matiere-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .sidebar-actions { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .btn-sidebar {
+            width: 100%; background: transparent; border: 2px dashed var(--border); padding: 0.6rem;
+            border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+            transition: all var(--transition); color: var(--primary); text-align: center;
+        }
+        .btn-sidebar:hover { border-color: var(--primary); background: var(--primary-light); }
+        .search-bar { margin-bottom: 1.5rem; }
+        .search-input { width: 100%; padding: 0.9rem 1.2rem; border: 2px solid var(--border); border-radius: 50px; background: var(--card); color: var(--text); }
+        .search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        .fiches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .fiche-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.5rem; transition: all var(--transition); cursor: pointer;
+        }
+        .fiche-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .fiche-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+        .fiche-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: var(--bg); }
+        .fiche-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--text); }
+        .fiche-matiere { font-size: 0.75rem; color: var(--primary); font-weight: 600; }
+        .fiche-preview { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.8rem; line-height: 1.5; }
+        .fiche-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
+        .fiche-tag { background: var(--bg); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; color: var(--text-light); }
+        .fiche-actions { display: flex; gap: 0.5rem; }
+        .btn-fiche { padding: 0.4rem 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all var(--transition); }
+        .btn-edit { background: var(--primary-light); color: var(--primary); }
+        .btn-edit:hover { background: var(--primary); color: #FFF; }
+        .btn-delete { background: #FEE2E2; color: #DC2626; }
+        .btn-delete:hover { background: #DC2626; color: #FFF; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            z-index: 200; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--card); border-radius: var(--radius); padding: 2rem;
+            width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: modalIn 0.4s ease-out;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal h3 { font-family: 'Syne', sans-serif; margin-bottom: 1.2rem; color: var(--text); }
+        .modal .input-group { margin-bottom: 1rem; }
+        .modal-close { float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-light); }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border); padding: 0.5rem 2rem;
+            display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;
+            max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) { .organizer-layout { grid-template-columns: 1fr; } .sidebar { position: static; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🗂️ Organiseur de Fiches</h1>
+        <p>Gère tes fiches de révision par matière, avec tags, recherche et export</p>
+    </div>
+
+    <div class="organizer-layout">
+        <div class="sidebar">
+            <h3>📚 Matières</h3>
+            <ul class="matiere-list" id="matiere-list"></ul>
+            <div class="sidebar-actions">
+                <button class="btn-sidebar" onclick="openAddMatiereModal()">➕ Nouvelle matière</button>
+                <button class="btn-sidebar" onclick="openAddFicheModal()">📝 Nouvelle fiche</button>
+                <button class="btn-sidebar" style="color:var(--success)" onclick="exportAllFiches()">📥 Tout exporter</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="search-bar">
+                <input type="text" class="search-input" id="search-input" placeholder="🔍 Rechercher une fiche..." oninput="renderFiches()">
+            </div>
+            <div class="fiches-grid" id="fiches-grid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Fiche -->
+<div class="modal-overlay" id="modal-fiche">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-fiche')">✕</button>
+        <h3 id="modal-fiche-title">📝 Nouvelle fiche</h3>
+        <input type="hidden" id="edit-fiche-id">
+        <div class="input-group"><label>Matière</label><select id="fiche-matiere"></select></div>
+        <div class="input-group"><label>Titre</label><input type="text" id="fiche-title" placeholder="Titre de la fiche"></div>
+        <div class="input-group"><label>Contenu</label><textarea id="fiche-content" rows="5" placeholder="Contenu de la fiche..."></textarea></div>
+        <div class="input-group"><label>Tags (séparés par des virgules)</label><input type="text" id="fiche-tags" placeholder="ex: important, examen, définition"></div>
+        <button class="btn-primary" onclick="saveFiche()">💾 Sauvegarder</button>
+    </div>
+</div>
+
+<!-- Modal Matière -->
+<div class="modal-overlay" id="modal-matiere">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-matiere')">✕</button>
+        <h3>➕ Nouvelle matière</h3>
+        <div class="input-group"><label>Nom</label><input type="text" id="new-matiere-name" placeholder="Ex: Mathématiques"></div>
+        <div class="input-group"><label>Couleur</label><select id="new-matiere-color">
+            <option value="#FF6B35">🟠 Orange</option><option value="#2563EB">🔵 Bleu</option>
+            <option value="#7C3AED">🟣 Violet</option><option value="#10B981">🟢 Vert</option>
+            <option value="#F59E0B">🟡 Jaune</option><option value="#EF4444">🔴 Rouge</option>
+        </select></div>
+        <button class="btn-primary" onclick="addMatiere()">✅ Ajouter</button>
+    </div>
+</div>
+
+<script>
+    let fiches = JSON.parse(localStorage.getItem('organiseur-fiches') || '[]');
+    let matieres = JSON.parse(localStorage.getItem('organiseur-matieres') || '[]');
+    let currentMatiere = 'all';
+
+    if (matieres.length === 0) {
+        matieres = [
+            { name: 'Mathématiques', color: '#FF6B35' },
+            { name: 'Physique', color: '#2563EB' },
+            { name: 'Informatique', color: '#7C3AED' },
+            { name: 'Langues', color: '#10B981' }
+        ];
+        localStorage.setItem('organiseur-matieres', JSON.stringify(matieres));
+    }
+
+    function saveFiches() { localStorage.setItem('organiseur-fiches', JSON.stringify(fiches)); }
+    function saveMatieres() { localStorage.setItem('organiseur-matieres', JSON.stringify(matieres)); }
+
+    function openAddFicheModal(id) {
+        document.getElementById('modal-fiche-title').innerText = id ? '✏️ Modifier la fiche' : '📝 Nouvelle fiche';
+        document.getElementById('edit-fiche-id').value = id || '';
+        document.getElementById('fiche-title').value = '';
+        document.getElementById('fiche-content').value = '';
+        document.getElementById('fiche-tags').value = '';
+        renderMatiereSelect();
+        if (id) {
+            const fiche = fiches.find(f => f.id === id);
+            if (fiche) {
+                document.getElementById('fiche-title').value = fiche.title;
+                document.getElementById('fiche-content').value = fiche.content;
+                document.getElementById('fiche-tags').value = fiche.tags.join(', ');
+                document.getElementById('fiche-matiere').value = fiche.matiere;
+            }
+        }
+        document.getElementById('modal-fiche').classList.add('active');
+    }
+
+    function openAddMatiereModal() { document.getElementById('modal-matiere').classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function saveFiche() {
+        const id = document.getElementById('edit-fiche-id').value;
+        const title = document.getElementById('fiche-title').value.trim();
+        const content = document.getElementById('fiche-content').value.trim();
+        const tags = document.getElementById('fiche-tags').value.split(',').map(t => t.trim()).filter(t => t);
+        const matiere = document.getElementById('fiche-matiere').value;
+        if (!title || !content) return;
+        if (id) {
+            const fiche = fiches.find(f => f.id === id);
+            if (fiche) { fiche.title = title; fiche.content = content; fiche.tags = tags; fiche.matiere = matiere; }
+        } else {
+            fiches.push({ id: Date.now().toString(), title, content, tags, matiere, date: new Date().toISOString() });
+            if (typeof addXP !== 'undefined') addXP(5, 'create-fiche');
+            if (typeof XPSystem !== 'undefined') XPSystem.incrementCounter('fiches-count');
+        }
+        saveFiches();
+        closeModal('modal-fiche');
+        renderAll();
+    }
+
+    function deleteFiche(id) {
+        if (!confirm('Supprimer cette fiche ?')) return;
+        fiches = fiches.filter(f => f.id !== id);
+        saveFiches();
+        renderAll();
+    }
+
+    function addMatiere() {
+        const name = document.getElementById('new-matiere-name').value.trim();
+        const color = document.getElementById('new-matiere-color').value;
+        if (!name) return;
+        matieres.push({ name, color });
+        saveMatieres();
+        closeModal('modal-matiere');
+        document.getElementById('new-matiere-name').value = '';
+        renderAll();
+    }
+
+    function renderAll() { renderMatiereList(); renderFiches(); renderMatiereSelect(); }
+
+    function renderMatiereList() {
+        const counts = {};
+        fiches.forEach(f => counts[f.matiere] = (counts[f.matiere] || 0) + 1);
+        let html = `<li><a href="#" class="${currentMatiere === 'all' ? 'active' : ''}" onclick="filterByMatiere('all', this)">📋 Toutes <span class="badge">${fiches.length}</span></a></li>`;
+        matieres.forEach(m => {
+            html += `<li><a href="#" class="${currentMatiere === m.name ? 'active' : ''}" onclick="filterByMatiere('${m.name}', this)">
+                        <div class="matiere-dot" style="background:${m.color}"></div>${m.name} <span class="badge">${counts[m.name] || 0}</span>
+                    </a></li>`;
+        });
+        document.getElementById('matiere-list').innerHTML = html;
+    }
+
+    function renderMatiereSelect() {
+        const select = document.getElementById('fiche-matiere');
+        select.innerHTML = matieres.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+    }
+
+    function renderFiches() {
+        const search = document.getElementById('search-input').value.toLowerCase();
+        let filtered = fiches;
+        if (currentMatiere !== 'all') filtered = filtered.filter(f => f.matiere === currentMatiere);
+        if (search) filtered = filtered.filter(f => f.title.toLowerCase().includes(search) || f.content.toLowerCase().includes(search) || f.tags.some(t => t.toLowerCase().includes(search)));
+        const container = document.getElementById('fiches-grid');
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state"><p style="font-size:3rem">📭</p><p>Aucune fiche trouvée</p></div>`;
+            return;
+        }
+        const matiereColors = Object.fromEntries(matieres.map(m => [m.name, m.color]));
+        container.innerHTML = filtered.map(f => {
+            const color = matiereColors[f.matiere] || '#FF6B35';
+            const preview = f.content.substring(0, 100) + (f.content.length > 100 ? '...' : '');
+            return `<div class="fiche-card">
+                        <div class="fiche-header">
+                            <div class="fiche-icon" style="background:${color}20">📝</div>
+                            <div><div class="fiche-title">${escapeHtml(f.title)}</div><div class="fiche-matiere" style="color:${color}">${f.matiere} • ${new Date(f.date).toLocaleDateString('fr-FR')}</div></div>
+                        </div>
+                        <p class="fiche-preview">${escapeHtml(preview)}</p>
+                        ${f.tags.length ? `<div class="fiche-tags">${f.tags.map(t => `<span class="fiche-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+                        <div class="fiche-actions">
+                            <button class="btn-fiche btn-edit" onclick="openAddFicheModal('${f.id}')">✏️ Modifier</button>
+                            <button class="btn-fiche btn-delete" onclick="deleteFiche('${f.id}')">🗑️</button>
+                        </div>
+                    </div>`;
+        }).join('');
+    }
+
+    function filterByMatiere(matiere, el) {
+        currentMatiere = matiere;
+        document.querySelectorAll('.matiere-list a').forEach(a => a.classList.remove('active'));
+        if (el) el.classList.add('active');
+        renderFiches();
+    }
+
+    function exportAllFiches() {
+        const blob = new Blob([JSON.stringify({ fiches, matieres }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fiches-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+
+    document.getElementById('modal-fiche').addEventListener('click', e => { if (e.target === document.getElementById('modal-fiche')) closeModal('modal-fiche'); });
+    document.getElementById('modal-matiere').addEventListener('click', e => { if (e.target === document.getElementById('modal-matiere')) closeModal('modal-matiere'); });
+    renderAll();
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

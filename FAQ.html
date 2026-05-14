@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - CalculEtudiant</title>
+    <meta name="description" content="Trouve les réponses à toutes tes questions sur les outils CalculEtudiant.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .faq-container { max-width: 800px; margin: 0 auto; }
+        .faq-category { margin-bottom: 3rem; }
+        .faq-category-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.8rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); color: var(--text); }
+        .faq-item { background: var(--card); border-radius: 15px; margin-bottom: 0.8rem; border: 1px solid var(--border); overflow: hidden; transition: all 0.3s; }
+        .faq-question { width: 100%; padding: 1.2rem 1.5rem; background: none; border: none; color: var(--text); font-size: 1rem; font-weight: 600; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-family: 'DM Sans', sans-serif; transition: all 0.3s; }
+        .faq-question:hover { color: var(--primary); }
+        .faq-arrow { font-size: 0.8rem; color: var(--text-secondary); transition: transform 0.3s; flex-shrink: 0; }
+        .faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--primary); }
+        .faq-item.open { border-color: var(--primary); background: var(--primary-light); }
+        .faq-item.open .faq-question { color: var(--primary); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; }
+        .faq-item.open .faq-answer { max-height: 500px; padding: 0 1.5rem 1.2rem; }
+        .faq-answer p { color: var(--text-secondary); line-height: 1.7; }
+        .faq-answer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .faq-answer a:hover { text-decoration: underline; }
+        .search-faq { margin-bottom: 2rem; }
+        .search-faq input { width: 100%; padding: 1rem 1.5rem; border: 2px solid var(--border); border-radius: 50px; background: var(--card); color: var(--text); font-size: 1rem; }
+        .search-faq input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        .contact-cta { margin-top: 3rem; text-align: center; padding: 2rem; background: var(--primary-light); border-radius: var(--radius); border: 1px solid rgba(var(--primaryRGB),0.2); }
+        .contact-cta h3 { font-family: 'Syne', sans-serif; margin-bottom: 0.5rem; color: var(--text); }
+        .cta-button { display: inline-block; background: var(--gradient); color: #FFF; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+        .cta-button:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(var(--primaryRGB),0.3); }
+
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem; font-size: 0.8rem;
+            max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" class="btn-header" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges"><span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span><span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span><span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span><span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span><span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span></div>
+</div>
+<div class="container">
+    <div class="page-header">
+        <h1>💬 Besoin d'aide ?</h1>
+        <p>On a rassemblé les questions les plus posées. Si tu ne trouves pas ta réponse, contacte-nous !</p>
+    </div>
+    <div class="faq-container">
+        <div class="search-faq"><input type="text" id="faq-search" placeholder="🔍 Cherche une question... (ex: moyenne, sauvegarde, quiz)" oninput="filtrerFAQ()"></div>
+        <div class="faq-category" data-category="general">
+            <h2 class="faq-category-title">🌐 Questions Générales</h2>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">C'est quoi CalculEtudiant ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>CalculEtudiant est une <strong>boîte à outils 100% gratuite</strong> conçue pour les étudiants. Tu y trouves des calculateurs (moyenne, budget, bourse), des générateurs (CV, quiz, planning), et des ressources pour t'aider à réussir tes études. Tout est <strong>sans inscription</strong> et tes données restent <strong>dans ton navigateur</strong>.</p></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Le site est-il vraiment 100% gratuit ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p><strong>Oui, totalement !</strong> Notre monétisation passe par les pubs Google AdSense. Soutenez-nous en désactivant votre bloqueur de pub. Si tu veux nous soutenir, partage-le autour de toi ! 🙌</p></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Est-ce que mes données sont en sécurité ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p><strong>Oui, absolument.</strong> Toutes tes données (notes, CV, fiches, quiz) sont stockées <strong>exclusivement dans ton navigateur</strong> via le localStorage. Rien n'est envoyé sur nos serveurs. On ne vend rien, on ne tracke rien.</p></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Le site fonctionne sur mobile ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p><strong>Oui !</strong> Tous les outils sont responsive et s'adaptent à ton smartphone, tablette ou ordinateur. 📱</p></div></div>
+        </div>
+        <div class="faq-category" data-category="calculateurs">
+            <h2 class="faq-category-title">🧮 Calculateurs</h2>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment calculer ma moyenne avec coefficients ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Va dans le <a href="calculateur-moyenne.html">Calculateur de Moyenne</a> :</p><ul><li>Choisis ton semestre</li><li>Entre le nom de la matière</li><li>Ajoute ta note /20 et le coefficient</li><li>Clique sur "Ajouter"</li></ul></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment estimer ma bourse CROUS ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Utilise le <a href="simulateur-bourse.html">Simulateur de Bourse</a>. C'est une estimation basée sur les barèmes officiels. Pour une demande officielle : <a href="https://www.messervices.etudiant.gouv.fr" target="_blank">messervices.etudiant.gouv.fr</a>.</p></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment gérer mon budget étudiant ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Le <a href="budget-colocation.html">Calculateur de Budget</a> te montre combien il te reste après tes dépenses fixes et variables.</p></div></div>
+        </div>
+        <div class="faq-category" data-category="revision">
+            <h2 class="faq-category-title">🧠 Quiz, Fiches & Révision</h2>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment générer un quiz avec l'IA ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Le <a href="generateur-quiz.html">Générateur de Quiz Intelligent</a> utilise Gemini pour créer des questions personnalisées selon ta matière et ton niveau.</p></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment créer des fiches de révision ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Sur la page <a href="fiches-biblio-ia.html">Fiches + Biblio IA</a>, tu peux créer, générer avec l'IA et réviser en mode swipe.</p></div></div>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment fonctionne le timer Pomodoro ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>25 minutes de travail, 5 minutes de pause. Tous les 4 cycles, pause de 15-30 min. <a href="pomodoro.html">Essaie le timer !</a></p></div></div>
+        </div>
+        <div class="faq-category" data-category="cv">
+            <h2 class="faq-category-title">📄 CV & Orientation</h2>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Comment créer mon CV étudiant ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Le <a href="cv-lettre-ia.html">Générateur CV + Lettre IA</a> propose un template moderne, prévisualisation en direct et export PDF. La lettre de motivation peut être générée par IA.</p></div></div>
+        </div>
+        <div class="faq-category" data-category="sauvegardes">
+            <h2 class="faq-category-title">💾 Sauvegardes & Données</h2>
+            <div class="faq-item"><button class="faq-question" onclick="toggleFAQ(this)">Où sont stockées mes données ?<span class="faq-arrow">▼</span></button><div class="faq-answer"><p>Tout est dans le <strong>localStorage de ton navigateur</strong>. Change d'appareil = exporte/importe via <a href="mes-sauvegardes.html">Mes Sauvegardes</a>.</p></div></div>
+        </div>
+        <div class="contact-cta"><h3>🤙 Tu n'as pas trouvé ta réponse ?</h3><p>On est là pour t'aider !</p><a href="mailto:billkant6@gmail.com" class="cta-button">📧 Nous contacter</a></div>
+    </div>
+</div>
+<footer><p>© 2026 CalculEtudiant - Fait avec ❤️ pour les étudiants</p></footer>
+<script>
+function toggleFAQ(btn){ const item=btn.parentElement; document.querySelectorAll('.faq-item.open').forEach(el=>{ if(el!==item)el.classList.remove('open'); }); item.classList.toggle('open'); }
+function filtrerFAQ(){ const q=document.getElementById('faq-search').value.toLowerCase(); const cats=document.querySelectorAll('.faq-category'); let found=false; cats.forEach(cat=>{ let hasVisible=false; const items=cat.querySelectorAll('.faq-item'); items.forEach(item=>{ const text=item.textContent.toLowerCase(); if(q===''||text.includes(q)){ item.style.display=''; hasVisible=true; found=true; }else{ item.style.display='none'; } }); cat.style.display=hasVisible?'':'none'; }); }
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

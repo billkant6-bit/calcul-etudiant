@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur d'Alternance - CalculEtudiant</title>
+    <meta name="description" content="Calcule ton salaire en alternance selon ton âge et ton niveau. Grille salariale 2024.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .slider-group { margin-bottom: 1rem; }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 0.3rem;
+        }
+        .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .slider-value { font-weight: 700; color: var(--primary); }
+
+        .grille-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 1rem; }
+        .grille-table th { background: var(--bg); padding: 0.5rem; text-align: center; font-weight: 700; border-bottom: 2px solid var(--border); font-size: 0.7rem; color: var(--text); }
+        .grille-table td { padding: 0.5rem; text-align: center; border-bottom: 1px solid var(--border); color: var(--text-light); }
+        .grille-table tr:hover td { background: var(--primary-light); }
+        .grille-table td.highlight { background: var(--primary-light); font-weight: 700; color: var(--primary); border-radius: 4px; }
+
+        .frise { display: flex; gap: 0; margin: 1.5rem 0; position: relative; }
+        .frise::before { content: ''; position: absolute; top: 20px; left: 0; right: 0; height: 3px; background: var(--border); z-index: 0; }
+        .frise-step { flex: 1; text-align: center; position: relative; z-index: 1; }
+        .frise-dot {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 3px solid var(--border);
+            margin: 0 auto 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all var(--transition);
+        }
+        .frise-step.active .frise-dot { background: var(--primary); border-color: var(--primary); color: #FFF; animation: pulse 2s infinite; }
+        .frise-step.done .frise-dot { background: var(--success); border-color: var(--success); color: #FFF; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 8px rgba(var(--primaryRGB),0.4); } 50% { box-shadow: 0 0 20px rgba(var(--primaryRGB),0.8); } }
+        .frise-salaire { font-weight: 700; color: var(--primary); font-size: 0.85rem; }
+        .frise-label { font-size: 0.7rem; color: var(--text-light); }
+
+        .result-highlight { margin-top: 1.5rem; padding: 1.5rem; background: var(--primary-light); border-radius: var(--radius); text-align: center; }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🔧 Simulateur d'Alternance</h1>
+        <p>Calcule ton salaire en alternance selon la grille officielle 2024</p>
+    </div>
+
+    <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+        <div class="card">
+            <h2 class="section-title">👤 Ton profil</h2>
+            <div class="slider-group">
+                <label>🎂 Âge <span class="slider-value" id="val-age">20 ans</span></label>
+                <input type="range" id="age" min="16" max="30" value="20" step="1" oninput="updateAll()">
+            </div>
+            <div class="slider-group">
+                <label>📚 Année d'alternance <span class="slider-value" id="val-annee">1ère année</span></label>
+                <input type="range" id="annee" min="1" max="3" value="1" step="1" oninput="updateAll()">
+            </div>
+            <div class="input-group"><label>📝 Type de contrat</label><select id="contrat" onchange="updateAll()"><option value="apprentissage" selected>Contrat d'apprentissage</option><option value="pro">Contrat de professionnalisation</option></select></div>
+            <div class="input-group"><label>🎓 Niveau de diplôme préparé</label><select id="niveau-diplome" onchange="updateAll()"><option value="bac">Bac / CAP</option><option value="bac+2" selected>Bac+2 (BTS/DUT)</option><option value="licence">Licence (Bac+3)</option><option value="master">Master (Bac+5)</option></select></div>
+
+            <div class="result-highlight">
+                <p style="font-size:0.8rem;color:var(--text-light);text-transform:uppercase">Salaire brut mensuel</p>
+                <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--primary)" id="salaire-brut">— €</div>
+                <p style="font-size:0.85rem;color:var(--text-light);margin-top:0.3rem">Net estimé : <strong style="color:var(--success)" id="salaire-net">— €</strong></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">📊 Grille salariale 2024</h2>
+            <div class="frise" id="frise">
+                <div class="frise-step active"><div class="frise-dot">1</div><div class="frise-salaire" id="frise-a1">—</div><div class="frise-label">1ère année</div></div>
+                <div class="frise-step"><div class="frise-dot">2</div><div class="frise-salaire" id="frise-a2">—</div><div class="frise-label">2ème année</div></div>
+                <div class="frise-step"><div class="frise-dot">3</div><div class="frise-salaire" id="frise-a3">—</div><div class="frise-label">3ème année</div></div>
+            </div>
+            <div style="overflow-x:auto"><table class="grille-table" id="grille-table"><table></div>
+            <div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:var(--radius-sm)">
+                <p style="font-size:0.85rem;color:var(--text)">💡 <strong>À savoir :</strong> Les salaires en alternance sont exonérés d'impôts jusqu'à <strong>20 815 €</strong> par an.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const smic = 1801.80;
+    const grilleApprentissage = {
+        'bac': { '16-17': [27, 39, 55], '18-20': [43, 51, 67], '21-25': [53, 61, 78], '26+': [100, 100, 100] },
+        'bac+2': { '16-17': [27, 39, 55], '18-20': [43, 51, 67], '21-25': [53, 61, 78], '26+': [100, 100, 100] },
+        'licence': { '16-17': [37, 49, 65], '18-20': [53, 61, 78], '21-25': [63, 71, 88], '26+': [100, 100, 100] },
+        'master': { '16-17': [37, 49, 65], '18-20': [53, 61, 78], '21-25': [63, 71, 88], '26+': [100, 100, 100] }
+    };
+    const grillePro = {
+        'bac': { '16-20': 55, '21-25': 70, '26+': 100 },
+        'bac+2': { '16-20': 65, '21-25': 80, '26+': 100 },
+        'licence': { '16-20': 65, '21-25': 80, '26+': 100 },
+        'master': { '16-20': 75, '21-25': 90, '26+': 100 }
+    };
+
+    function getAgeCategory(age) {
+        if (age < 18) return '16-17';
+        if (age <= 20) return '18-20';
+        if (age <= 25) return '21-25';
+        return '26+';
+    }
+
+    function getProAgeCategory(age) {
+        if (age <= 20) return '16-20';
+        if (age <= 25) return '21-25';
+        return '26+';
+    }
+
+    function updateAll() {
+        const age = parseInt(document.getElementById('age').value);
+        const annee = parseInt(document.getElementById('annee').value);
+        const contrat = document.getElementById('contrat').value;
+        const niveau = document.getElementById('niveau-diplome').value;
+
+        document.getElementById('val-age').textContent = age + ' ans';
+        document.getElementById('val-annee').textContent = annee + 'ère année';
+
+        let pct = 0, salairesFrise = [];
+        if (contrat === 'apprentissage') {
+            const ageCat = getAgeCategory(age);
+            const grille = grilleApprentissage[niveau] || grilleApprentissage['bac+2'];
+            const pcts = grille[ageCat] || [43, 51, 67];
+            pct = pcts[annee - 1];
+            salairesFrise = pcts.map(p => Math.round(smic * p / 100));
+        } else {
+            const ageCat = getProAgeCategory(age);
+            const grille = grillePro[niveau] || grillePro['bac+2'];
+            pct = grille[ageCat] || 65;
+            salairesFrise = [pct, pct, pct].map(p => Math.round(smic * p / 100));
+        }
+
+        const salaireBrut = Math.round(smic * pct / 100);
+        const salaireNet = Math.round(salaireBrut * 0.78);
+
+        document.getElementById('salaire-brut').textContent = salaireBrut.toLocaleString('fr-FR') + ' €';
+        document.getElementById('salaire-net').textContent = salaireNet.toLocaleString('fr-FR') + ' €';
+
+        document.getElementById('frise-a1').textContent = salairesFrise[0].toLocaleString('fr-FR') + ' €';
+        document.getElementById('frise-a2').textContent = (salairesFrise[1] || salairesFrise[0]).toLocaleString('fr-FR') + ' €';
+        document.getElementById('frise-a3').textContent = (salairesFrise[2] || salairesFrise[0]).toLocaleString('fr-FR') + ' €';
+
+        const steps = document.querySelectorAll('.frise-step');
+        steps.forEach((step, i) => {
+            step.classList.remove('active', 'done');
+            if (i < annee - 1) step.classList.add('done');
+            if (i === annee - 1) step.classList.add('active');
+        });
+
+        let html = '<tr><th>Âge</th><th>1ère année</th><th>2ème année</th><th>3ème année</th></tr>';
+        const ageCat = getAgeCategory(age);
+        const grille = contrat === 'apprentissage' ? (grilleApprentissage[niveau] || grilleApprentissage['bac+2']) : null;
+        if (grille) {
+            Object.entries(grille).forEach(entry => {
+                const cat = entry[0], pcts = entry[1];
+                const isCurrent = cat === ageCat;
+                html += `<tr><td style="font-weight:${isCurrent ? '700' : '400'}">${cat.replace('-', ' à ')} ans</td>`;
+                pcts.forEach((p, i) => {
+                    const isCurrentCell = isCurrent && i === annee - 1;
+                    html += `<td class="${isCurrentCell ? 'highlight' : ''}">${p}% (${Math.round(smic * p / 100)} €)</td>`;
+                });
+                html += `</tr>`;
+            });
+        } else {
+            Object.entries(grillePro[niveau] || grillePro['bac+2']).forEach(entry => {
+                const cat = entry[0], p = entry[1];
+                const isCurrent = cat === getProAgeCategory(age);
+                html += `<tr><td style="font-weight:${isCurrent ? '700' : '400'}">${cat.replace('-', ' à ')} ans</td>`;
+                html += `<td class="${isCurrent ? 'highlight' : ''}" colspan="3">${p}% (${Math.round(smic * p / 100)} €)</td></tr>`;
+            });
+        }
+        document.getElementById('grille-table').innerHTML = html;
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    updateAll();
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>

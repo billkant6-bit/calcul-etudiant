@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparateur Transport Étudiant - CalculEtudiant</title>
+    <meta name="description" content="Compare le coût annuel de tes trajets : voiture, transports en commun, covoiturage, vélo, trottinette. Économise sur tes déplacements.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280; --text-muted: #9CA3AF;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Sélecteur de thème */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Mise en page */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+        .section-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .slider-group { margin-bottom: 1.2rem; }
+        .slider-group label { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.3rem; }
+        .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .slider-value { font-weight: 700; color: var(--primary); }
+
+        .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        .result-item {
+            background: var(--bg); border-radius: var(--radius-sm); padding: 1rem; text-align: center;
+            border: 1px solid var(--border); transition: all var(--transition);
+        }
+        .result-item.best { border: 2px solid var(--success); background: #ECFDF5; }
+        .result-icon { font-size: 2rem; }
+        .result-name { font-weight: 700; margin: 0.3rem 0; }
+        .result-cost { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; }
+        .result-detail { font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem; }
+
+        .eco-badge { display: inline-block; background: #ECFDF5; color: #059669; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+
+        .partner-links { margin-top: 2rem; }
+        .partner-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem;
+            margin-bottom: 0.8rem; display: flex; align-items: center; gap: 1rem; transition: all var(--transition);
+        }
+        .partner-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .partner-icon { font-size: 2rem; }
+        .partner-name { font-weight: 700; }
+        .partner-desc { font-size: 0.85rem; color: var(--text-light); }
+        .partner-link {
+            margin-left: auto; background: var(--primary); color: #FFF; padding: 0.5rem 1rem;
+            border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.85rem; white-space: nowrap;
+        }
+        .partner-link:hover { background: #e85d2c; }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .result-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🚌 Comparateur Transport Étudiant</h1>
+        <p>Calcule le coût annuel de tes déplacements selon le mode de transport choisi</p>
+    </div>
+
+    <div class="main-grid">
+        <div class="card">
+            <h2 class="section-title">📋 Ton trajet</h2>
+            <div class="slider-group">
+                <label>📏 Distance domicile ↔ études <span class="slider-value" id="distance-value">10 km</span></label>
+                <input type="range" id="distance" min="1" max="100" value="10" step="1" oninput="updateComparateur()">
+            </div>
+            <div class="slider-group">
+                <label>📅 Jours de présence par semaine <span class="slider-value" id="jours-value">4 jours</span></label>
+                <input type="range" id="jours" min="1" max="7" value="4" oninput="updateComparateur()">
+            </div>
+            <div class="slider-group">
+                <label>🚗 Si voiture : prix du carburant (€/L) <span class="slider-value" id="carburant-value">1.80 €</span></label>
+                <input type="range" id="carburant" min="1.40" max="2.20" value="1.80" step="0.01" oninput="updateComparateur()">
+            </div>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:-0.5rem">Hypothèses : voiture 6L/100km, assurance jeune conducteur 1200€/an, entretien 300€/an.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">💰 Comparaison annuelle</h2>
+            <div class="result-grid" id="results-grid">
+                <!-- Rempli dynamiquement -->
+            </div>
+            <div id="conseil" style="margin-top:1rem; padding:1rem; background:var(--primary-light); border-radius:var(--radius-sm);">
+                <p id="conseil-text" style="color:var(--text); font-weight:600;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publicité milieu de page -->
+    <div style="min-height:90px;margin:2rem 0;text-align:center">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- Partenaires -->
+    <div class="partner-links">
+        <h2 class="section-title">🔗 Économise sur tes déplacements</h2>
+        <div class="partner-card">
+            <div class="partner-icon">🚗</div>
+            <div>
+                <div class="partner-name">Assurance auto jeune conducteur (Leocare)</div>
+                <div class="partner-desc">Assurance 100% digitale, sans engagement, idéale pour étudiants.</div>
+            </div>
+            <a href="https://www.leocare.fr?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+        <div class="partner-card">
+            <div class="partner-icon">🚌</div>
+            <div>
+                <div class="partner-name">BlaBlaCar Daily</div>
+                <div class="partner-desc">Covoiturage domicile-travail, à partir de 3€ le trajet.</div>
+            </div>
+            <a href="https://www.blablacar.fr/daily?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+        <div class="partner-card">
+            <div class="partner-icon">🛴</div>
+            <div>
+                <div class="partner-name">Trotti'Loc</div>
+                <div class="partner-desc">Location longue durée de trottinettes électriques pour étudiants.</div>
+            </div>
+            <a href="https://www.trottiloc.com?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+        <div class="partner-card">
+            <div class="partner-icon">🚲</div>
+            <div>
+                <div class="partner-name">Vélo'v / Vélib'</div>
+                <div class="partner-desc">Abonnements vélo en libre-service à tarif réduit étudiant.</div>
+            </div>
+            <a href="https://www.velib-metropole.fr?utm_source=calculEtudiant" target="_blank" class="partner-link">Voir</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bannière ancrée -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+
+<script>
+    function updateComparateur() {
+        const distance = parseInt(document.getElementById('distance').value);
+        const jours = parseInt(document.getElementById('jours').value);
+        const carburant = parseFloat(document.getElementById('carburant').value);
+
+        document.getElementById('distance-value').textContent = distance + ' km';
+        document.getElementById('jours-value').textContent = jours + ' jour' + (jours > 1 ? 's' : '');
+        document.getElementById('carburant-value').textContent = carburant.toFixed(2) + ' €';
+
+        // Calcul des jours annuels (en excluant les vacances, on prend 40 semaines actives)
+        const semaines = 40;
+        const joursAnnuels = jours * semaines;
+        const kmAnnuels = distance * 2 * joursAnnuels; // aller-retour
+
+        // Voiture
+        const conso = 6; // L/100km
+        const litresAnnuels = (kmAnnuels / 100) * conso;
+        const coutCarburant = litresAnnuels * carburant;
+        const coutAssurance = 1200;
+        const coutEntretien = 300;
+        const coutVoiture = coutCarburant + coutAssurance + coutEntretien;
+
+        // Transports en commun (abonnement annuel étudiant approximatif)
+        let abonnementTC = 300; // base
+        if (distance <= 5) abonnementTC = 200;
+        else if (distance <= 20) abonnementTC = 350;
+        else abonnementTC = 450;
+        const coutTC = abonnementTC;
+
+        // Covoiturage : 0.10€ par km (prix moyen BlaBlaCar Daily)
+        const coutCovoit = kmAnnuels * 0.10;
+
+        // Vélo / trottinette : coût fixe (achat + entretien) amorti sur 3 ans
+        const coutVelo = 200; // 600€ d'achat + entretien sur 3 ans
+        const coutTrottinette = 300; // 900€ sur 3 ans
+
+        const modes = [
+            { nom: 'Voiture', icon: '🚗', cout: coutVoiture, detail: `${litresAnnuels.toFixed(0)}L, assurance, entretien` },
+            { nom: 'Transports', icon: '🚌', cout: coutTC, detail: 'Abonnement étudiant' },
+            { nom: 'Covoiturage', icon: '🚘', cout: coutCovoit, detail: '~0.10€/km' },
+            { nom: 'Vélo', icon: '🚲', cout: coutVelo, detail: 'Achat amorti sur 3 ans' },
+            { nom: 'Trottinette', icon: '🛴', cout: coutTrottinette, detail: 'Achat amorti sur 3 ans' }
+        ];
+
+        // Trouver le meilleur
+        let minCost = Infinity;
+        modes.forEach(m => { if (m.cout < minCost) minCost = m.cout; });
+
+        const resultsContainer = document.getElementById('results-grid');
+        resultsContainer.innerHTML = modes.map(m => {
+            const isBest = m.cout === minCost;
+            return `
+                <div class="result-item ${isBest ? 'best' : ''}">
+                    <div class="result-icon">${m.icon} ${isBest ? '<span class="eco-badge">Le + économique</span>' : ''}</div>
+                    <div class="result-name">${m.nom}</div>
+                    <div class="result-cost" style="color:${isBest ? 'var(--success)' : 'var(--text)'}">${Math.round(m.cout)} €</div>
+                    <div class="result-detail">${m.detail}</div>
+                </div>
+            `;
+        }).join('');
+
+        // Conseil personnalisé
+        const bestMode = modes.find(m => m.cout === minCost);
+        const conseilText = document.getElementById('conseil-text');
+        if (bestMode) {
+            conseilText.innerHTML = `✅ Le mode le moins cher pour toi est : <strong>${bestMode.icon} ${bestMode.nom}</strong> à <strong>${Math.round(bestMode.cout)} €/an</strong>. Soit environ <strong>${Math.round(bestMode.cout / 12)} €/mois</strong>.`;
+        }
+
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    updateComparateur();
+</script>
+</body>
+</html>

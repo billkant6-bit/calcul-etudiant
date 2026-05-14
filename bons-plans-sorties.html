@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bons Plans Sorties & Culture - CalculEtudiant</title>
+    <meta name="description" content="Les meilleurs plans sorties, culture et loisirs pour étudiants : cinéma, musées, théâtres, concerts.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+        .update-badge { display: inline-block; background: #ECFDF5; color: #059669; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+
+        .category-section { margin-bottom: 3rem; }
+        .category-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: #0F0F1A; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.8rem; }
+        .category-desc { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+
+        .plan-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.8rem; box-shadow: var(--shadow); transition: all var(--transition); cursor: pointer;
+        }
+        .plan-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .plan-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .plan-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+        .plan-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: #0F0F1A; }
+        .plan-description { font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-bottom: 1rem; }
+        .plan-info { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-light); margin-bottom: 1rem; flex-wrap: wrap; }
+        .plan-tag { background: var(--bg); padding: 0.25rem 0.7rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .plan-tag.free { background: #ECFDF5; color: #059669; }
+        .plan-tag.reduction { background: #FFF7ED; color: #F59E0B; }
+        .plan-tag.obligatoire { background: #FEF2F2; color: #DC2626; }
+        .btn-decouvrir { display: inline-block; padding: 0.6rem 1.5rem; background: var(--primary); color: #FFF; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all var(--transition); }
+        .btn-decouvrir:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
+
+        .tip-box { background: var(--primary-light); border: 1px solid rgba(255,107,53,0.2); border-radius: var(--radius); padding: 1.5rem; margin-top: 2rem; }
+        .tip-box h3 { font-family: 'Syne', sans-serif; color: var(--primary); margin-bottom: 0.5rem; }
+        .tip-box p { color: var(--text-light); font-size: 0.9rem; line-height: 1.6; }
+
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        @media (max-width: 768px) { .plans-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🎟️ Bons Plans Sorties & Culture <span class="update-badge" id="update-badge">✅ À jour</span></h1>
+        <p>Tous les plans pour sortir sans te ruiner : cinéma, musées, théâtres, concerts, voyages...</p>
+    </div>
+
+    <!-- CINÉMA -->
+    <div class="category-section">
+        <h2 class="category-title">🎬 Cinéma</h2>
+        <p class="category-desc">Les meilleures réductions pour aller au cinéma</p>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#FFF0E8">🎬</div><div class="plan-name">UGC Illimité -26 ans</div></div>
+                <p class="plan-description">Accès illimité à tous les films dans les cinémas UGC. Séances en illimité toute l'année.</p>
+                <div class="plan-info"><span class="plan-tag reduction">17.90€/mois</span><span class="plan-tag free">-40% vs plein tarif</span></div>
+                <a href="https://www.ugc.fr" target="_blank" class="btn-decouvrir">🎟️ Voir l'offre</a>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#E8F4FF">🎬</div><div class="plan-name">Pathé Gaumont -26 ans</div></div>
+                <p class="plan-description">Carte d'abonnement illimitée pour les moins de 26 ans dans tous les cinémas Pathé.</p>
+                <div class="plan-info"><span class="plan-tag reduction">19.90€/mois</span><span class="plan-tag free">Films illimités</span></div>
+                <a href="https://www.pathe.fr" target="_blank" class="btn-decouvrir">🎟️ Voir l'offre</a>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#E8FFF4">🎬</div><div class="plan-name">MK2 -26 ans</div></div>
+                <p class="plan-description">Tarifs réduits pour les étudiants dans tous les cinémas MK2 de Paris.</p>
+                <div class="plan-info"><span class="plan-tag reduction">7.50€ la séance</span><span class="plan-tag free">Sur présentation</span></div>
+                <a href="https://www.mk2.com" target="_blank" class="btn-decouvrir">🎟️ Voir l'offre</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MUSÉES -->
+    <div class="category-section">
+        <h2 class="category-title">🏛️ Musées & Monuments</h2>
+        <p class="category-desc">Musées gratuits pour les moins de 26 ans</p>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#FFF0E8">🏛️</div><div class="plan-name">Musées Nationaux Gratuits</div></div>
+                <p class="plan-description">Tous les musées nationaux sont GRATUITS pour les moins de 26 ans (UE) : Louvre, Orsay, Versailles...</p>
+                <div class="plan-info"><span class="plan-tag free">Gratuit</span><span class="plan-tag obligatoire">Justificatif obligatoire</span></div>
+                <a href="https://www.culture.gouv.fr" target="_blank" class="btn-decouvrir">🏛️ Voir la liste</a>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#F3E8FF">🏛️</div><div class="plan-name">Cité des Sciences</div></div>
+                <p class="plan-description">Tarif réduit pour les étudiants à la Cité des Sciences et de l'Industrie de Paris.</p>
+                <div class="plan-info"><span class="plan-tag reduction">9€ au lieu de 13€</span></div>
+                <a href="https://www.cite-sciences.fr" target="_blank" class="btn-decouvrir">🏛️ Voir l'offre</a>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#E8FFF4">🏛️</div><div class="plan-name">Château de Versailles</div></div>
+                <p class="plan-description">Gratuit pour les moins de 26 ans résidents de l'UE. Accès au château et jardins.</p>
+                <div class="plan-info"><span class="plan-tag free">Gratuit</span><span class="plan-tag obligatoire">Justificatif</span></div>
+                <a href="https://www.chateauversailles.fr" target="_blank" class="btn-decouvrir">🏛️ Voir l'offre</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- STREAMING & CULTURE -->
+    <div class="category-section">
+        <h2 class="category-title">🎵 Streaming & Culture</h2>
+        <p class="category-desc">Abonnements musique, vidéo et culture à prix réduit</p>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#E8FFF4">🎵</div><div class="plan-name">Spotify Premium Étudiant</div></div>
+                <p class="plan-description">Spotify Premium à moitié prix pour les étudiants. Vérification annuelle.</p>
+                <div class="plan-info"><span class="plan-tag reduction">5.99€/mois</span><span class="plan-tag free">-50%</span></div>
+                <a href="https://www.spotify.com/fr/student/" target="_blank" class="btn-decouvrir">🎵 Voir l'offre</a>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#FFF0E8">🎵</div><div class="plan-name">Apple Music Étudiant</div></div>
+                <p class="plan-description">Apple Music à prix réduit + Apple TV+ inclus pour les étudiants.</p>
+                <div class="plan-info"><span class="plan-tag reduction">5.99€/mois</span><span class="plan-tag free">TV+ inclus</span></div>
+                <a href="https://www.apple.com/fr/apple-music/" target="_blank" class="btn-decouvrir">🎵 Voir l'offre</a>
+            </div>
+            <div class="plan-card">
+                <div class="plan-header"><div class="plan-icon" style="background:#E8F4FF">🎬</div><div class="plan-name">Prime Video Étudiant</div></div>
+                <p class="plan-description">Amazon Prime à -50% pour les étudiants. Livraison + streaming vidéo.</p>
+                <div class="plan-info"><span class="plan-tag reduction">3.49€/mois</span><span class="plan-tag free">-50%</span></div>
+                <a href="https://www.amazon.fr/joinstudent" target="_blank" class="btn-decouvrir">🎬 Voir l'offre</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASS CULTURE -->
+    <div class="tip-box">
+        <h3>💡 Le Pass Culture</h3>
+        <p>Si tu as entre 15 et 18 ans, tu bénéficies du <strong>Pass Culture</strong> : 20€ à 15 ans, 30€ à 16-17 ans, et <strong>300€ à 18 ans</strong> à dépenser en biens culturels (livres, cinéma, concerts, musées, instruments...). Télécharge l'application Pass Culture !</p>
+        <a href="https://www.passculture.fr" target="_blank" class="btn-decouvrir" style="margin-top:1rem">🎟️ Découvrir le Pass Culture</a>
+    </div>
+</div>
+
+
+
+<!-- Bannière ancrée discrète (fixe en bas de l'écran) -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+</body>
+</html>

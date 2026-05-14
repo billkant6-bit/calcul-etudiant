@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaînes YouTube par Filière - CalculEtudiant</title>
+    <meta name="description" content="Les meilleures chaînes YouTube pour réussir dans 15 filières étudiantes. Médecine, droit, informatique, etc.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280; --text-muted: #9CA3AF;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Sélecteur de thème */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Filtres filières */
+        .filieres-filter {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2rem;
+        }
+        .filiere-btn {
+            background: var(--bg); border: 2px solid var(--border); padding: 0.6rem 1.2rem;
+            border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            transition: all var(--transition); white-space: nowrap;
+        }
+        .filiere-btn:hover, .filiere-btn.active {
+            border-color: var(--primary); background: var(--primary-light); color: var(--primary);
+        }
+
+        /* Grille chaînes */
+        .chaines-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+        }
+        .chaine-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.5rem; transition: all var(--transition); display: flex; gap: 1rem;
+            align-items: flex-start; cursor: pointer;
+        }
+        .chaine-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .chaine-avatar {
+            width: 60px; height: 60px; border-radius: 50%; background: var(--bg);
+            display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+            flex-shrink: 0; border: 2px solid var(--border);
+        }
+        .chaine-info { flex: 1; }
+        .chaine-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+        .chaine-matiere { font-size: 0.8rem; color: var(--primary); font-weight: 600; margin-bottom: 0.5rem; }
+        .chaine-desc { font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 0.8rem; }
+        .chaine-link {
+            display: inline-block; padding: 0.4rem 1rem; background: var(--primary-light); color: var(--primary);
+            border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.8rem; transition: all 0.3s;
+        }
+        .chaine-link:hover { background: var(--primary); color: #FFF; }
+
+        .no-results { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 1.2rem; }
+
+        @media (max-width: 768px) {
+            .filieres-filter { gap: 0.4rem; }
+            .filiere-btn { padding: 0.5rem 0.9rem; font-size: 0.75rem; }
+            .chaines-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="color:var(--primary);text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🎥 Chaînes YouTube par Filière</h1>
+        <p>Sélectionne ta filière et découvre les meilleures chaînes pour réussir tes études</p>
+    </div>
+
+    <!-- Pub entre le titre et les filtres (optionnel) -->
+    <div style="min-height:90px;margin:1rem 0 2rem;text-align:center">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- Filtres des filières -->
+    <div class="filieres-filter" id="filiere-filter"></div>
+
+    <!-- Résultats -->
+    <div class="chaines-grid" id="chaines-grid"></div>
+    <div class="no-results" id="no-results" style="display:none">Aucune chaîne trouvée pour cette filière.</div>
+</div>
+
+<!-- Bannière ancrée discrète -->
+<ins class="adsbygoogle"
+     style="display:block; position:fixed; bottom:0; left:0; width:100%; height:70px; z-index:100; background:rgba(0,0,0,0.03); text-align:center;"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXX"
+     data-ad-slot="ANCHOR_SLOT"
+     data-ad-format="anchor"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<script src="adsense-check.js"></script>
+
+<script>
+    // Données des 15 filières et leurs chaînes
+    const filieresData = [
+        {
+            nom: "Médecine",
+            icon: "🏥",
+            matieres: ["Anatomie", "Pharmacologie", "Sémiologie"],
+            chaines: [
+                { nom: "Primum Non Nocere", avatar: "🩺", matiere: "Général", desc: "Vulgarisation médicale de qualité par un médecin.", lien: "https://youtube.com/@PrimumNonNocere" },
+                { nom: "Dr Nozman", avatar: "🧬", matiere: "Culture scientifique", desc: "Curiosités médicales et expériences fun.", lien: "https://youtube.com/@DrNozman" },
+                { nom: "Anat'Physio", avatar: "🦴", matiere: "Anatomie", desc: "Cours d'anatomie clairs et animés.", lien: "https://youtube.com/@AnatPhysio" },
+                { nom: "MedCram", avatar: "💊", matiere: "Pharmaco", desc: "Explications détaillées pour les étudiants en médecine.", lien: "https://youtube.com/@MedCram" }
+            ]
+        },
+        {
+            nom: "Droit",
+            icon: "⚖️",
+            matieres: ["Droit civil", "Droit constitutionnel", "Droit pénal"],
+            chaines: [
+                { nom: "JurisLogic", avatar: "📜", matiere: "Introduction au droit", desc: "Cours de droit simplifiés pour L1.", lien: "https://youtube.com/@JurisLogic" },
+                { nom: "Le Droit en 5 minutes", avatar: "⏱️", matiere: "Toutes matières", desc: "Fiches de révision ultra rapides.", lien: "https://youtube.com/@LeDroiten5min" },
+                { nom: "Lex Learning", avatar: "🎓", matiere: "Droit des obligations", desc: "Préparation aux TD et examens.", lien: "https://youtube.com/@LexLearning" }
+            ]
+        },
+        {
+            nom: "Économie-Gestion",
+            icon: "📈",
+            matieres: ["Microéconomie", "Macroéconomie", "Comptabilité"],
+            chaines: [
+                { nom: "Heu?reka", avatar: "💡", matiere: "Vulgarisation économique", desc: "Comprendre l'économie avec des dessins.", lien: "https://youtube.com/@HeurekaFinance" },
+                { nom: "Stupid Economics", avatar: "🤔", matiere: "Actualité économique", desc: "Décryptage décalé de l'économie.", lien: "https://youtube.com/@StupidEconomics" },
+                { nom: "Elucid", avatar: "📊", matiere: "Finance", desc: "Vidéos pédagogiques sur la finance et la gestion.", lien: "https://youtube.com/@Elucid" }
+            ]
+        },
+        {
+            nom: "Informatique",
+            icon: "💻",
+            matieres: ["Programmation", "Algorithmique", "Réseaux"],
+            chaines: [
+                { nom: "Grafikart", avatar: "🖥️", matiere: "Dev Web", desc: "Tutos HTML, CSS, JavaScript, PHP...", lien: "https://youtube.com/@Grafikart" },
+                { nom: "Benjamin Code", avatar: "👨‍💻", matiere: "Création de sites", desc: "Développement front-end & design.", lien: "https://youtube.com/@BenjaminCode" },
+                { nom: "Hardisk", avatar: "💾", matiere: "Hardware & système", desc: "Vulgarisation du matériel informatique.", lien: "https://youtube.com/@Hardisk" },
+                { nom: "Cours de Maths & Info", avatar: "🧮", matiere: "Algorithmique", desc: "Cours académiques pour L1/L2.", lien: "https://youtube.com/@CoursMathsInfo" }
+            ]
+        },
+        {
+            nom: "Lettres",
+            icon: "📚",
+            matieres: ["Littérature", "Grammaire", "Philosophie"],
+            chaines: [
+                { nom: "Le Mock", avatar: "📖", matiere: "Littérature", desc: "Analyses d'œuvres littéraires.", lien: "https://youtube.com/@LeMock" },
+                { nom: "La Prof", avatar: "👩‍🏫", matiere: "Français", desc: "Cours de français du collège à l'université.", lien: "https://youtube.com/@LaProf" },
+                { nom: "Un Cours de 5 Minutes", avatar: "⏳", matiere: "Culture générale", desc: "Révisions express pour les partiels.", lien: "https://youtube.com/@UnCoursde5Minutes" }
+            ]
+        },
+        {
+            nom: "Psychologie",
+            icon: "🧠",
+            matieres: ["Psychologie cognitive", "Psychologie sociale", "Neurosciences"],
+            chaines: [
+                { nom: "PsykoCouac", avatar: "🗣️", matiere: "Vulgarisation psy", desc: "Comprendre les concepts clés de la psychologie.", lien: "https://youtube.com/@PsykoCouac" },
+                { nom: "Le Psy Lab", avatar: "🔬", matiere: "Méthodologie", desc: "Cours de stats et méthodo pour psycho.", lien: "https://youtube.com/@LePsyLab" },
+                { nom: "Mental Floss", avatar: "🧩", matiere: "Culture générale", desc: "Fonctionnement du cerveau et anecdotes.", lien: "https://youtube.com/@MentalFloss" }
+            ]
+        },
+        {
+            nom: "STAPS",
+            icon: "⚽",
+            matieres: ["Physiologie", "Entraînement", "Management du sport"],
+            chaines: [
+                { nom: "Le Grand Plateau", avatar: "🏋️", matiere: "Entraînement", desc: "Conseils pour la préparation physique.", lien: "https://youtube.com/@LeGrandPlateau" },
+                { nom: "Sport Santé", avatar: "❤️", matiere: "Physiologie", desc: "Vulgarisation de la physiologie de l'effort.", lien: "https://youtube.com/@SportSante" },
+                { nom: "Move Academy", avatar: "🤸", matiere: "Management", desc: "Formation aux métiers du sport.", lien: "https://youtube.com/@MoveAcademy" }
+            ]
+        },
+        {
+            nom: "Biologie",
+            icon: "🧪",
+            matieres: ["Biologie cellulaire", "Génétique", "Écologie"],
+            chaines: [
+                { nom: "ScienceClic", avatar: "🔭", matiere: "Vulgarisation scientifique", desc: "Animations de grande qualité en biologie.", lien: "https://youtube.com/@ScienceClic" },
+                { nom: "Bio Logique", avatar: "🧬", matiere: "Cours de bio", desc: "Explications pas à pas pour les examens.", lien: "https://youtube.com/@BioLogique" },
+                { nom: "La Bio en Vidéo", avatar: "📹", matiere: "Révisions", desc: "Résumés visuels de tout le programme.", lien: "https://youtube.com/@LaBioenVideo" }
+            ]
+        },
+        {
+            nom: "Chimie",
+            icon: "⚗️",
+            matieres: ["Chimie organique", "Chimie minérale", "Thermodynamique"],
+            chaines: [
+                { nom: "Chimie Générale", avatar: "🧴", matiere: "Tous niveaux", desc: "Cours complets de chimie.", lien: "https://youtube.com/@ChimieGenerale" },
+                { nom: "Les Bons Profs Chimie", avatar: "👨‍🔬", matiere: "Lycée/L1", desc: "Rappels et exercices corrigés.", lien: "https://youtube.com/@LesBonsProfsChimie" },
+                { nom: "Professor Chimie", avatar: "🎯", matiere: "Chimie orga", desc: "Fiches de révision et astuces.", lien: "https://youtube.com/@ProfessorChimie" }
+            ]
+        },
+        {
+            nom: "Physique",
+            icon: "⚛️",
+            matieres: ["Mécanique", "Électromagnétisme", "Optique"],
+            chaines: [
+                { nom: "ScienceClic", avatar: "🔭", matiere: "Vulgarisation", desc: "Excellent pour comprendre les concepts.", lien: "https://youtube.com/@ScienceClic" },
+                { nom: "El Jj", avatar: "🧲", matiere: "Cours & Exos", desc: "Chaîne de référence pour la physique.", lien: "https://youtube.com/@ElJj" },
+                { nom: "Physique à la Carte", avatar: "🗺️", matiere: "L1/L2", desc: "Synthèses visuelles interactives.", lien: "https://youtube.com/@PhysiqueALaCarte" }
+            ]
+        },
+        {
+            nom: "Mathématiques",
+            icon: "📐",
+            matieres: ["Algèbre", "Analyse", "Probabilités"],
+            chaines: [
+                { nom: "Mathrix", avatar: "🎓", matiere: "Collège/Lycée", desc: "Cours de maths dynamiques.", lien: "https://youtube.com/@Mathrix" },
+                { nom: "Mickaël Launay (Micmaths)", avatar: "📊", matiere: "Culture math", desc: "Vidéos ludiques pour aimer les maths.", lien: "https://youtube.com/@Micmaths" },
+                { nom: "Yvan Monka", avatar: "🧑‍🏫", matiere: "Lycée/Prépa", desc: "Très gros catalogue d'exercices corrigés.", lien: "https://youtube.com/@YvanMonka" }
+            ]
+        },
+        {
+            nom: "Langues",
+            icon: "🌍",
+            matieres: ["Anglais", "Espagnol", "Allemand"],
+            chaines: [
+                { nom: "English with Lucy", avatar: "🇬🇧", matiere: "Anglais", desc: "Prononciation et vocabulaire britannique.", lien: "https://youtube.com/@EnglishWithLucy" },
+                { nom: "Français avec Pierre", avatar: "🇫🇷", matiere: "Français", desc: "Pour les étudiants étrangers.", lien: "https://youtube.com/@FrancaisAvecPierre" },
+                { nom: "Langfix", avatar: "🔤", matiere: "Multilingue", desc: "Astuces pour apprendre plusieurs langues.", lien: "https://youtube.com/@Langfix" }
+            ]
+        },
+        {
+            nom: "Histoire",
+            icon: "🏛️",
+            matieres: ["Histoire contemporaine", "Histoire médiévale", "Géopolitique"],
+            chaines: [
+                { nom: "Nota Bene", avatar: "📜", matiere: "Vulgarisation historique", desc: "L'histoire racontée de façon captivante.", lien: "https://youtube.com/@NotaBene" },
+                { nom: "Histoire Géo", avatar: "🗺️", matiere: "Cours lycée/L1", desc: "Résumés des grands événements.", lien: "https://youtube.com/@HistoireGeo" },
+                { nom: "L'Histoire par les Cartes", avatar: "🌐", matiere: "Géopolitique", desc: "Comprendre le monde actuel via l'histoire.", lien: "https://youtube.com/@LHistoireParLesCartes" }
+            ]
+        },
+        {
+            nom: "Géographie",
+            icon: "🌎",
+            matieres: ["Géographie physique", "Aménagement", "Cartographie"],
+            chaines: [
+                { nom: "Le Dessous des Cartes", avatar: "🗺️", matiere: "Géopolitique", desc: "Émission culte d'ARTE.", lien: "https://youtube.com/@LeDessousDesCartes" },
+                { nom: "Géographie 2.0", avatar: "🌐", matiere: "Cours universitaires", desc: "Nouveaux regards sur la géographie.", lien: "https://youtube.com/@Geo2.0" },
+                { nom: "TéléCrayon", avatar: "✏️", matiere: "Cartographie", desc: "Dessiner des cartes pour mieux apprendre.", lien: "https://youtube.com/@TeleCrayon" }
+            ]
+        },
+        {
+            nom: "Arts du spectacle",
+            icon: "🎭",
+            matieres: ["Théâtre", "Cinéma", "Danse"],
+            chaines: [
+                { nom: "Le Ciné Club", avatar: "🎬", matiere: "Cinéma", desc: "Analyses de films et mouvements.", lien: "https://youtube.com/@LeCineClub" },
+                { nom: "Art d'Histoire", avatar: "🖼️", matiere: "Histoire de l'art", desc: "Comprendre les grands courants artistiques.", lien: "https://youtube.com/@ArtHistoire" },
+                { nom: "Spectacle Vivant", avatar: "🎪", matiere: "Arts vivants", desc: "Captations et interviews de professionnels.", lien: "https://youtube.com/@SpectacleVivant" }
+            ]
+        }
+    ];
+
+    let currentFiliere = "all";
+
+    // Construire les boutons de filière
+    const filterContainer = document.getElementById('filiere-filter');
+    function renderFilters() {
+        let html = `<button class="filiere-btn active" data-filiere="all" onclick="filterFilieres('all', this)">🔥 Toutes</button>`;
+        filieresData.forEach(f => {
+            html += `<button class="filiere-btn" data-filiere="${f.nom}" onclick="filterFilieres('${f.nom}', this)">${f.icon} ${f.nom}</button>`;
+        });
+        filterContainer.innerHTML = html;
+    }
+
+    function filterFilieres(filiere, btn) {
+        currentFiliere = filiere;
+        document.querySelectorAll('.filiere-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderChaines();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function renderChaines() {
+        const grid = document.getElementById('chaines-grid');
+        const noResults = document.getElementById('no-results');
+        let chaines = [];
+        if (currentFiliere === 'all') {
+            chaines = filieresData.flatMap(f => f.chaines.map(c => ({...c, filiere: f.nom, filiereIcon: f.icon})));
+        } else {
+            const filiere = filieresData.find(f => f.nom === currentFiliere);
+            if (filiere) chaines = filiere.chaines.map(c => ({...c, filiere: filiere.nom, filiereIcon: filiere.icon}));
+        }
+
+        if (chaines.length === 0) {
+            grid.innerHTML = '';
+            noResults.style.display = 'block';
+            return;
+        }
+        noResults.style.display = 'none';
+
+        grid.innerHTML = chaines.map(c => `
+            <div class="chaine-card">
+                <div class="chaine-avatar">${c.avatar}</div>
+                <div class="chaine-info">
+                    <div class="chaine-name">${c.nom}</div>
+                    <div class="chaine-matiere">${c.filiereIcon} ${c.filiere} · ${c.matiere}</div>
+                    <p class="chaine-desc">${c.desc}</p>
+                    <a href="${c.lien}" target="_blank" class="chaine-link">📺 Voir la chaîne</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderFilters();
+    renderChaines();
+</script>
+</body>
+</html>

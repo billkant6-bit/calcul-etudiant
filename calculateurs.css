@@ -1,0 +1,327 @@
+/* ============================================
+   CALCULATEURS.CSS - Compatible THEMES.JS v2
+   ============================================ */
+
+/* Reset de base */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ========== HEADER ========== */
+header {
+    background: rgba(var(--primaryRGB), 0.08);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all 0.3s ease;
+}
+
+nav {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    letter-spacing: -0.5px;
+}
+
+.back-link {
+    color: var(--textSecondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+.back-link:hover { color: var(--primary); }
+
+/* ========== CONTAINER ========== */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+/* ========== PAGE HEADER ========== */
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.5rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-header p {
+    color: var(--textSecondary);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ========== CARTES ========== */
+.card, .budget-card, .quiz-card, .config-card, .result-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(var(--primaryRGB), 0.08);
+    transform: translateY(-2px);
+}
+
+.section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid var(--primaryLight);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ========== INPUTS ========== */
+.input-group {
+    margin-bottom: 1.2rem;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--textSecondary);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primaryLight);
+    background: var(--card);
+}
+
+/* ========== BOUTONS ========== */
+.calculate-btn, .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--primary);
+    color: white;
+    padding: 0.9rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(var(--primaryRGB), 0.25);
+    width: 100%;
+}
+
+.calculate-btn:hover, .btn-primary:hover {
+    background: var(--primaryHover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(var(--primaryRGB), 0.35);
+}
+
+.add-item-btn {
+    background: transparent;
+    color: var(--primary);
+    border: 2px dashed var(--primaryLight);
+    padding: 0.7rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+.add-item-btn:hover {
+    background: var(--primaryLight);
+    border-style: solid;
+}
+
+.remove-btn {
+    background: rgba(239,68,68,0.15);
+    color: var(--danger);
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+.remove-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* ========== RÉSULTATS ========== */
+.results-section, .results {
+    display: none;
+    animation: fadeInUp 0.5s ease-out;
+}
+.results-section.show, .results.show { display: block; }
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-box {
+    background: var(--primaryLight);
+    border: 1px solid rgba(var(--primaryRGB), 0.2);
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.result-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -1px;
+}
+
+/* ========== TABLES ========== */
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--textSecondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeInUp 0.4s ease-out; }
+
+/* ========== BREAKDOWN ========== */
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background: var(--bg);
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid var(--primary);
+    transition: all 0.3s ease;
+}
+.breakdown-item:hover {
+    background: var(--primaryLight);
+    border-left-width: 5px;
+}
+
+/* ========== PROGRESS BAR ========== */
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: var(--textMuted);
+    font-size: 0.85rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .page-header h1 { font-size: 1.8rem; }
+    .card { padding: 1.2rem; }
+    .result-value { font-size: 2.2rem; }
+    .container { padding: 2rem 1rem; }
+}

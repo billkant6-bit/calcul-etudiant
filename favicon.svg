@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Fond arrondi -->
+  <rect width="100" height="100" rx="25" fill="url(#grad)"/>
+  <!-- Livre -->
+  <g transform="translate(28,18)">
+    <path d="M22 0 L22 55 L22 55 Q22 58 20 60 L20 60 Q18 62 15 62 L15 62 L0 62 L0 58 L15 58 Q17 58 18 56 L18 56 L18 0 Z" fill="#FFF" opacity="0.95"/>
+    <path d="M22 0 L44 10 L44 60 Q44 62 42 60 L22 55 Z" fill="#FFF" opacity="0.9"/>
+    <!-- Lignes de texte -->
+    <line x1="5" y1="12" x2="16" y2="12" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5" y1="18" x2="16" y2="18" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5" y1="24" x2="14" y2="24" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5" y1="30" x2="16" y2="30" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5" y1="36" x2="10" y2="36" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <!-- Chapeau de diplôme -->
+  <g transform="translate(50,10)">
+    <path d="M0 20 L25 10 L50 20 L25 25 Z" fill="#FFF" opacity="0.95"/>
+    <rect x="22" y="12" width="6" height="15" rx="1" fill="#FFF" opacity="0.9"/>
+  </g>
+</svg>

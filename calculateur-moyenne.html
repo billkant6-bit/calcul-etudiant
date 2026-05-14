@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Moyenne - CalculEtudiant</title>
+    <meta name="description" content="Calcule ta moyenne générale avec graphiques, prédictions et système LMD.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js"></script>
+    <script src="xp-system.js"></script>
+    <style>
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            height: 180px;
+            padding: 1rem 0;
+        }
+        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .bar-wrapper { width: 100%; height: 150px; display: flex; align-items: flex-end; }
+        .bar {
+            width: 100%;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 4px;
+            position: relative;
+            background: linear-gradient(to top, var(--primary), #FF8C42);
+        }
+        .bar-value {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--text);
+            background: var(--card);
+            padding: 0.1rem 0.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+        .bar-label { font-size: 0.75rem; font-weight: 600; color: var(--text-light); }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; transition: all var(--transition); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .stat-value { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; animation: countIn 0.8s ease-out; }
+        @keyframes countIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        .stat-label { font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-top: 0.2rem; }
+        .mention-badge { display: inline-block; padding: 0.3rem 1.2rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .mention-tb { background: #FFF7ED; color: #F59E0B; }
+        .mention-b { background: #ECFDF5; color: #059669; }
+        .mention-ab { background: #EFF6FF; color: #2563EB; }
+        .mention-p { background: #FEF2F2; color: #DC2626; }
+        .matiere-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.6rem;
+            background: var(--bg);
+            padding: 0.8rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            transition: all var(--transition);
+        }
+        .matiere-row:hover { transform: translateX(4px); border-color: var(--primary); }
+        .matiere-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .matiere-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+        .note-badge { padding: 0.2rem 0.6rem; border-radius: 20px; font-weight: 700; font-size: 0.8rem; }
+        .note-badge.good { background: #ECFDF5; color: #059669; }
+        .note-badge.bad { background: #FEF2F2; color: #DC2626; }
+        .prediction-box { background: linear-gradient(135deg, #FFF5F0, #FFF0E8); border: 1px solid rgba(255,107,53,0.2); border-radius: var(--radius-sm); padding: 1.2rem; margin-top: 1.5rem; display: none; }
+        .prediction-box.show { display: block; animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .xp-bar-container {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.4rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-option.active { border-color: var(--primary); background: var(--primaryLight); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+        .semester-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
+        .semester-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; transition: all var(--transition); }
+        .semester-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .semester-card .sem-name { font-weight: 700; }
+        .semester-card .sem-avg { font-size: 1.3rem; font-weight: 800; margin: 0.3rem 0; }
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .bar-chart { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector">
+                <button class="theme-toggle" id="themeToggle">🎨</button>
+                <div class="theme-menu" id="themeMenu"><div class="theme-grid" id="themeGrid"></div></div>
+            </div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Barre XP -->
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>📊 Calculateur de Moyenne</h1>
+        <p>Calcule ta moyenne LMD avec coefficients, graphiques et prédictions</p>
+    </div>
+
+    <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:2rem">
+        <div class="card">
+            <h2 class="section-title">➕ Ajouter une matière</h2>
+            <div class="input-group">
+                <label>📚 Semestre</label>
+                <select id="semestre">
+                    <option value="S1">S1 - Semestre 1</option><option value="S2">S2 - Semestre 2</option>
+                    <option value="S3">S3 - Semestre 3</option><option value="S4">S4 - Semestre 4</option>
+                    <option value="S5">S5 - Semestre 5</option><option value="S6">S6 - Semestre 6</option>
+                </select>
+            </div>
+            <div class="input-group"><label>📝 Nom de la matière</label><input type="text" id="matiere-nom" placeholder="Ex: Mathématiques"></div>
+            <div class="input-group"><label>🎯 Note (/20)</label><input type="number" id="matiere-note" min="0" max="20" step="0.5" placeholder="15.5"></div>
+            <div class="input-group"><label>⚖️ Coefficient (ECTS)</label><input type="number" id="matiere-coeff" min="0.5" step="0.5" value="3" placeholder="3"></div>
+            <button class="btn-primary" onclick="addMatiere()">➕ Ajouter</button>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">📈 Résultats</h2>
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-value" id="stat-moyenne" style="color:var(--primary)">—</div><div class="stat-label">Moyenne</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-ects" style="color:#2563EB">0</div><div class="stat-label">ECTS validés</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-mention" style="font-size:1rem">—</div><div class="stat-label">Mention</div></div>
+            </div>
+            <div class="bar-chart" id="bar-chart"></div>
+            <div id="matieres-list"></div>
+            <div class="prediction-box" id="prediction-box"><h4>🔮 Prédiction IA</h4><p id="prediction-text"></p></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:2rem">
+        <h2 class="section-title">📅 Par semestre</h2>
+        <div class="semester-grid" id="semesters-grid"></div>
+    </div>
+</div>
+
+<script>
+    const GEMINI_KEY = (() => { const k = 'QUl6YVN5REN5a0gyOEt' + 'sNDBQdWhGZU44RXhPTldj' + 'S3FEQVNIZkVn'; return atob(k); })();
+    let matieres = JSON.parse(localStorage.getItem('moyenne-matieres') || '[]');
+    const colors = ['#FF6B35', '#2563EB', '#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#6366F1'];
+
+    function save() { localStorage.setItem('moyenne-matieres', JSON.stringify(matieres)); }
+
+    function addMatiere() {
+        const semestre = document.getElementById('semestre').value;
+        const nom = document.getElementById('matiere-nom').value.trim();
+        const note = parseFloat(document.getElementById('matiere-note').value);
+        const coeff = parseFloat(document.getElementById('matiere-coeff').value);
+        if (!nom || isNaN(note) || note < 0 || note > 20 || isNaN(coeff) || coeff <= 0) {
+            alert('Remplis tous les champs correctement !');
+            return;
+        }
+        matieres.push({ id: Date.now(), semestre: semestre, nom: nom, note: note, coeff: coeff });
+        document.getElementById('matiere-nom').value = '';
+        document.getElementById('matiere-note').value = '';
+        document.getElementById('matiere-coeff').value = '3';
+        save();
+        renderAll();
+        if (typeof addXP !== 'undefined') addXP(5, 'use-calculator');
+    }
+
+    function deleteMatiere(id) {
+        matieres = matieres.filter(m => m.id !== id);
+        save();
+        renderAll();
+    }
+
+    function renderAll() { renderStats(); renderGraph(); renderList(); renderSemesters(); renderPrediction(); }
+
+    function renderStats() {
+        if (matieres.length === 0) {
+            document.getElementById('stat-moyenne').textContent = '—';
+            document.getElementById('stat-ects').textContent = '0';
+            document.getElementById('stat-mention').innerHTML = '—';
+            return;
+        }
+        const totalPoints = matieres.reduce((s, m) => s + m.note * m.coeff, 0);
+        const totalCoeff = matieres.reduce((s, m) => s + m.coeff, 0);
+        const moyenne = totalPoints / totalCoeff;
+        const ects = matieres.filter(m => m.note >= 10).reduce((s, m) => s + m.coeff, 0);
+        document.getElementById('stat-moyenne').textContent = moyenne.toFixed(2) + '/20';
+        document.getElementById('stat-ects').textContent = ects;
+        let mention = '';
+        if (moyenne >= 16) mention = '<span class="mention-badge mention-tb">Très Bien</span>';
+        else if (moyenne >= 14) mention = '<span class="mention-badge mention-b">Bien</span>';
+        else if (moyenne >= 12) mention = '<span class="mention-badge mention-ab">Assez Bien</span>';
+        else if (moyenne >= 10) mention = '<span class="mention-badge mention-p">Passable</span>';
+        else mention = '<span style="color:#DC2626;font-weight:700">Insuffisant</span>';
+        document.getElementById('stat-mention').innerHTML = mention;
+    }
+
+    function renderGraph() {
+        const container = document.getElementById('bar-chart');
+        if (matieres.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-light);text-align:center;width:100%;padding:2rem">Ajoute des matières pour voir le graphique 📊</p>';
+            return;
+        }
+        container.innerHTML = matieres.map((m, i) => `<div class="bar-col"><div class="bar-wrapper"><div class="bar" style="height:${(m.note / 20) * 150}px;background:linear-gradient(to top, ${colors[i % colors.length]}, ${colors[i % colors.length]}88)"><div class="bar-value">${m.note}</div></div></div><div class="bar-label">${m.nom.substring(0, 10)}</div></div>`).join('');
+    }
+
+    function renderList() {
+        const container = document.getElementById('matieres-list');
+        if (matieres.length === 0) { container.innerHTML = ''; return; }
+        container.innerHTML = matieres.map((m, i) => `<div class="matiere-row"><div class="matiere-dot" style="background:${colors[i % colors.length]}"></div><span class="matiere-name">${m.nom}</span><span style="color:var(--text-light);font-size:0.8rem;margin-right:0.5rem">${m.semestre} · coef ${m.coeff}</span><span class="note-badge ${m.note >= 10 ? 'good' : 'bad'}">${m.note}/20</span><button style="background:#FEE2E2;color:#DC2626;border:none;padding:0.2rem 0.5rem;border-radius:6px;cursor:pointer;font-size:0.7rem;margin-left:0.5rem" onclick="deleteMatiere(${m.id})">🗑️</button></div>`).join('');
+    }
+
+    function renderSemesters() {
+        const semesters = {};
+        matieres.forEach(m => { if (!semesters[m.semestre]) semesters[m.semestre] = []; semesters[m.semestre].push(m); });
+        const allSemesters = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+        const container = document.getElementById('semesters-grid');
+        container.innerHTML = allSemesters.map(s => {
+            const matieresDuSemestre = semesters[s] || [];
+            const total = matieresDuSemestre.reduce((sum, m) => sum + m.note * m.coeff, 0);
+            const coeff = matieresDuSemestre.reduce((sum, m) => sum + m.coeff, 0);
+            const moyenne = coeff > 0 ? total / coeff : 0;
+            const hasContent = matieresDuSemestre.length > 0;
+            return `<div class="semester-card"><div class="sem-name">${s}</div><div class="sem-avg" style="color:${hasContent ? (moyenne >= 10 ? 'var(--success)' : 'var(--danger)') : 'var(--text-light)'}">${hasContent ? moyenne.toFixed(1) : '—'}</div><div class="sem-count">${matieresDuSemestre.length} matière(s)</div></div>`;
+        }).join('');
+    }
+
+    async function renderPrediction() {
+        if (matieres.length < 2) { document.getElementById('prediction-box').classList.remove('show'); return; }
+        const totalPoints = matieres.reduce((s, m) => s + m.note * m.coeff, 0);
+        const totalCoeff = matieres.reduce((s, m) => s + m.coeff, 0);
+        const moyenne = totalPoints / totalCoeff;
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Un étudiant a une moyenne de ${moyenne.toFixed(1)}/20 avec ${matieres.length} matières. Donne UN conseil court (2 phrases) pour améliorer ou maintenir cette moyenne.` }] }] })
+            });
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Concentre-toi sur les matières à fort coefficient pour booster ta moyenne rapidement.";
+            document.getElementById('prediction-text').textContent = text;
+            document.getElementById('prediction-box').classList.add('show');
+        } catch(e) {
+            document.getElementById('prediction-text').textContent = "💡 Priorise les matières à plus gros coefficient : elles ont le plus d'impact sur ta moyenne.";
+            document.getElementById('prediction-box').classList.add('show');
+        }
+    }
+
+    renderAll();
+</script>
+<script src="adsense-check.js"></script>
+<script src="save-manager.js"></script>
+</body>
+</html>

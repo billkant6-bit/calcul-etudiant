@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Sauvegardes - CalculEtudiant</title>
+    <meta name="description" content="Retrouve toutes tes données sauvegardées au même endroit.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculateurs.css">
+    <script src="themes.js" defer></script>
+    <script src="theme-loader.js" defer></script>
+    <script src="xp-system.js"></script>
+    <meta name="monetag" content="f3e946f9f7f1823f3dd3fa3e4840ad80">
+    <style>
+        :root {
+            --bg: #F7F7FA; --card: #FFFFFF; --text: #1A1A2E; --text-light: #6B7280; --text-muted: #9CA3AF;
+            --primary: #FF6B35; --primary-light: #FFF0E8; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --border: #E8E8EE; --shadow: 0 2px 12px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 20px; --radius-sm: 14px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #F7F7FA 0%, #FFF5F0 50%, #F7F7FA 100%); font-family: 'DM Sans', sans-serif; color: var(--text); line-height: 1.6; min-height: 100vh; }
+        header { background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #FF6B35, #FF8C42); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .back-link { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; color: #0F0F1A; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-light); font-size: 1rem; }
+
+        /* Barre XP */
+        .xp-bar-container {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0.5rem 2rem; display: flex; align-items: center; gap: 1rem;
+            font-size: 0.8rem; max-width: 1280px; margin: 0 auto; flex-wrap: wrap;
+        }
+        .xp-label { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .xp-level { font-weight: 700; color: var(--text); white-space: nowrap; }
+        .xp-progress { flex: 1; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .xp-progress-fill { height: 100%; background: linear-gradient(90deg, #FFD23F, var(--primary)); border-radius: 10px; transition: width 0.5s ease; }
+        .xp-badges { display: flex; gap: 0.5rem; }
+        .xp-badge { font-size: 1.2rem; opacity: 0.3; transition: all 0.3s; cursor: default; }
+        .xp-badge.unlocked { opacity: 1; animation: bounce 1s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Sélecteur de thème */
+        .theme-selector { position: relative; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; }
+        .theme-toggle:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-menu { position: absolute; top: 120%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1rem; min-width: 340px; max-height: 420px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: 0 12px 32px rgba(0,0,0,0.1); z-index: 200; }
+        .theme-menu.active { opacity: 1; pointer-events: all; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .theme-option {
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem;
+            border: 2px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+            font-size: 0.65rem; font-weight: 600; color: var(--text); transition: all 0.3s;
+        }
+        .theme-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .theme-option.active { border-color: var(--primary); background: var(--primary-light); }
+        .theme-colors { display: flex; gap: 0.15rem; }
+        .theme-color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Dashboard */
+        .dashboard { display: grid; grid-template-columns: 260px 1fr; gap: 2rem; }
+        .sidebar { background: var(--card); border-radius: var(--radius); padding: 1.5rem; position: sticky; top: 100px; border: 1px solid var(--border); height: fit-content; }
+        .sidebar h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; margin-bottom: 0.8rem; }
+        .sidebar-nav { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm); color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all var(--transition);
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: var(--primary-light); color: var(--primary); }
+        .badge { margin-left: auto; background: var(--border); padding: 0.1rem 0.5rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+
+        .search-box { width: 100%; padding: 0.8rem 1.2rem; border: 2px solid var(--border); border-radius: 50px; font-size: 0.95rem; background: var(--card); margin-bottom: 1rem; }
+        .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.5rem 1rem; border-radius: 50px; border: 2px solid var(--border); background: transparent; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: all 0.3s; }
+        .filter-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        .save-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem;
+            margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; transition: all var(--transition);
+        }
+        .save-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .save-header { display: flex; justify-content: space-between; align-items: center; }
+        .save-type { background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+        .save-date { color: var(--text-muted); font-size: 0.75rem; }
+        .save-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .save-preview { color: var(--text-light); font-size: 0.85rem; }
+        .save-actions { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 600; font-size: 0.75rem; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-restore { background: var(--primary); color: #FFF; }
+        .btn-restore:hover { background: #e85d2c; }
+        .btn-export { background: var(--primary-light); color: var(--primary); }
+        .btn-export:hover { background: var(--primary); color: #FFF; }
+        .btn-delete { background: #FEE2E2; color: #DC2626; }
+        .btn-delete:hover { background: #DC2626; color: #FFF; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-mini { background: var(--card); border-radius: var(--radius-sm); padding: 1rem; text-align: center; border: 1px solid var(--border); }
+        .stat-mini-value { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .stat-mini-label { font-size: 0.75rem; color: var(--text-light); }
+
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">📚 CalculEtudiant</a>
+        <div style="display:flex;gap:1rem;align-items:center">
+            <a href="mes-sauvegardes.html" style="background:var(--gradient);color:#FFF;padding:0.5rem 1.2rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.85rem">💾 Sauvegardes</a>
+            <div class="theme-selector"><button class="theme-toggle" id="themeToggle">🎨</button><div class="theme-menu" id="themeMenu"><div class="theme-grid"></div></div></div>
+            <a href="index.html" class="back-link">← Retour</a>
+        </div>
+    </nav>
+</header>
+<div class="xp-bar-container">
+    <span class="xp-label">🏆 Niveau</span>
+    <span class="xp-level" id="xp-level">🌟 Débutant</span>
+    <div class="xp-progress"><div class="xp-progress-fill" id="xp-fill" style="width:0%"></div></div>
+    <span class="xp-label" id="xp-text">0 / 100 XP</span>
+    <span class="xp-label" id="xp-streak">🔥 0</span>
+    <div class="xp-badges">
+        <span class="xp-badge" id="badge-fiches" title="50 fiches créées">📝</span>
+        <span class="xp-badge" id="badge-quiz" title="20 quiz complétés">🧠</span>
+        <span class="xp-badge" id="badge-pomodoro" title="50 sessions Pomodoro">🍅</span>
+        <span class="xp-badge" id="badge-objectifs" title="30 objectifs atteints">🎯</span>
+        <span class="xp-badge" id="badge-streak" title="7 jours de streak">🔥</span>
+    </div>
+</div>
+<div class="container">
+    <div class="page-header"><h1>💾 Mes Sauvegardes</h1><p>Retrouve toutes tes données sauvegardées</p></div>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="dashboard">
+        <div class="sidebar">
+            <h3>📂 Catégories</h3>
+            <ul class="sidebar-nav" id="sidebar-nav"></ul>
+            <hr style="margin:1rem 0">
+            <button class="calculate-btn" onclick="exporterToutesSauvegardes()" style="margin-bottom:0.5rem">📥 Tout exporter</button>
+            <button class="add-item-btn" onclick="importerSauvegardes()" style="margin-bottom:0.5rem">📤 Importer</button>
+            <button class="remove-btn" onclick="viderToutesSauvegardes()" style="width:100%;margin-bottom:0.5rem">🗑️ Tout supprimer</button>
+        </div>
+        <div>
+            <input type="text" class="search-box" id="search-input" placeholder="🔍 Rechercher une sauvegarde..." oninput="filtrerEtAfficher()">
+            <div class="filter-bar" id="filter-bar">
+                <button class="filter-btn active" onclick="trierSauvegardes('recent')">🕐 Plus récent</button>
+                <button class="filter-btn" onclick="trierSauvegardes('ancien')">📅 Plus ancien</button>
+                <button class="filter-btn" onclick="trierSauvegardes('alpha')">🔤 Alphabétique</button>
+            </div>
+            <div id="sauvegardes-container"></div>
+            <div class="empty-state" id="empty-state" style="display:none">📭 Aucune sauvegarde trouvée</div>
+        </div>
+    </div>
+</div>
+<footer><p>© 2026 CalculEtudiant - Centre de Sauvegardes</p></footer>
+<script>
+    // ========== SOURCES DE SAUVEGARDES ==========
+    const SOURCES = [
+        { key: 'cvData', type: 'cv', nom: 'CV + Lettre', icone: '📄', outil: 'cv-lettre-ia.html', transform: (data) => ({ titre: 'CV - ' + (data.prenom || '') + ' ' + (data.nom || ''), apercu: data.titre || 'Curriculum Vitae' }) },
+        { key: 'quiz', type: 'quiz', nom: 'Quiz IA', icone: '❓', outil: 'generateur-quiz.html', transform: (data) => ({ titre: 'Quiz - ' + data.length + ' questions', apercu: data.slice(0,2).map(q=>q.question).join(' | ') }) },
+        { key: 'fiches-biblio', type: 'fiches', nom: 'Fiches + Biblio IA', icone: '📝', outil: 'fiches-biblio-ia.html', multiple: true, transformItem: (item) => ({ titre: item.question || 'Fiche', apercu: item.reponse?.substring(0,80) || '' }) },
+        { key: 'organiseur-fiches', type: 'fiches', nom: 'Organiseur fiches', icone: '🗂️', outil: 'organiseur-fiches.html', multiple: true, transformItem: (item) => ({ titre: item.title || 'Fiche', apercu: item.content?.substring(0,80) || '' }) },
+        { key: 'tracker-objectifs', type: 'objectifs', nom: 'Objectifs', icone: '🎯', outil: 'tracker-objectifs.html', multiple: true, transformItem: (item) => ({ titre: item.title || 'Objectif', apercu: item.status === 'done' ? '✅ Terminé' : '⏳ En cours' }) },
+        { key: 'budgetData', type: 'budget', nom: 'Budget', icone: '💵', outil: 'budget-colocation.html', transform: (data) => ({ titre: 'Budget étudiant', apercu: `Revenus: ${data.revenus || 0}€ - Dépenses: ${data.depenses || 0}€` }) },
+        { key: 'moyenne-matieres', type: 'moyenne', nom: 'Moyenne', icone: '📊', outil: 'calculateur-moyenne.html', transform: (data) => ({ titre: 'Moyenne - ' + data.length + ' matières', apercu: data.map(m=>m.nom+': '+m.note).join(', ') }) },
+        { key: 'planning-sessions', type: 'planning', nom: 'Planning', icone: '📅', outil: 'planning-revisions.html', transform: (data) => ({ titre: 'Planning', apercu: data.length + ' sessions planifiées' }) },
+        { key: 'todolist-tasks', type: 'todo', nom: 'To-Do List', icone: '📋', outil: 'todo-list.html', transform: (data) => ({ titre: 'Liste de tâches', apercu: data.length + ' tâches' }) },
+        { key: 'candidatures', type: 'candidatures', nom: 'Candidatures', icone: '💼', outil: 'tracker-candidatures.html', transform: (data) => ({ titre: 'Candidatures', apercu: data.length + ' candidatures' }) },
+        { key: 'colocataires', type: 'coloc', nom: 'Colocataires', icone: '🏠', outil: 'budget-colocation.html', transform: (data) => ({ titre: 'Colocataires', apercu: data.join(', ') }) },
+        { key: 'etat-lieux', type: 'checklist', nom: 'État des lieux', icone: '📋', outil: 'budget-colocation.html', transform: (data) => ({ titre: 'État des lieux', apercu: data.length + ' éléments' }) },
+        { key: 'manual-saves', type: 'manuel', nom: 'Sauvegardes manuelles', icone: '💾', outil: '#', multiple: true, transformItem: (item) => ({
+            titre: item.name,
+            apercu: 'Sauvegarde du ' + new Date(item.date).toLocaleDateString('fr-FR') + ' – ' + (item.state?.type || 'Inconnu')
+        })}
+    ];
+
+    let toutesSauvegardes = [];
+    let currentFilter = 'all';
+    let currentSort = 'recent';
+
+    function chargerToutesSauvegardes() {
+        toutesSauvegardes = [];
+        SOURCES.forEach(src => {
+            const raw = localStorage.getItem(src.key);
+            if (!raw) return;
+            try {
+                const data = JSON.parse(raw);
+                if (src.multiple && Array.isArray(data)) {
+                    data.forEach((item, idx) => {
+                        const { titre, apercu } = src.transformItem(item);
+                        toutesSauvegardes.push({
+                            id: `${src.key}-${idx}-${Date.now()}`,
+                            type: src.type,
+                            title: titre,
+                            preview: apercu,
+                            date: new Date().toISOString(),
+                            data: item,
+                            outil: src.outil,
+                            icone: src.icone,
+                            sourceKey: src.key,
+                            isMultiple: true
+                        });
+                    });
+                } else if (!src.multiple && data) {
+                    const { titre, apercu } = src.transform(data);
+                    toutesSauvegardes.push({
+                        id: src.key,
+                        type: src.type,
+                        title: titre,
+                        preview: apercu,
+                        date: new Date().toISOString(),
+                        data: data,
+                        outil: src.outil,
+                        icone: src.icone,
+                        sourceKey: src.key,
+                        isMultiple: false
+                    });
+                }
+            } catch(e) { console.warn(`Erreur parsing ${src.key}`, e); }
+        });
+        // Ajouter des dates aléatoires pour l'affichage (pour éviter une seule date)
+        toutesSauvegardes.forEach((s, i) => {
+            // On utilise la date de dernière modification du localStorage? Non, on génère une date approximative.
+            // Pour l'instant on garde la date de chargement, mais on pourrait la stocker.
+            if (!s.date) s.date = new Date().toISOString();
+        });
+        toutesSauvegardes.sort((a,b) => new Date(b.date) - new Date(a.date));
+        mettreAJourStats();
+        filtrerEtAfficher();
+    }
+
+    function mettreAJourStats() {
+        const counts = {};
+        toutesSauvegardes.forEach(s => { counts[s.type] = (counts[s.type] || 0) + 1; });
+        const total = toutesSauvegardes.length;
+        const sidebarNav = document.getElementById('sidebar-nav');
+        sidebarNav.innerHTML = `
+            <li><a href="#" class="${currentFilter === 'all' ? 'active' : ''}" data-filter="all" onclick="filtrerParCategorie('all', this)">📋 Toutes <span class="badge">${total}</span></a></li>
+            ${Object.entries(counts).map(([type, nb]) => `<li><a href="#" data-filter="${type}" onclick="filtrerParCategorie('${type}', this)">${getIconeType(type)} ${type} <span class="badge">${nb}</span></a></li>`).join('')}
+        `;
+        document.getElementById('stats-row').innerHTML = `
+            <div class="stat-mini"><div class="stat-mini-value">${total}</div><div class="stat-mini-label">Total</div></div>
+            <div class="stat-mini"><div class="stat-mini-value">${counts.cv || 0}</div><div class="stat-mini-label">CV</div></div>
+            <div class="stat-mini"><div class="stat-mini-value">${counts.fiches || 0}</div><div class="stat-mini-label">Fiches</div></div>
+            <div class="stat-mini"><div class="stat-mini-value">${counts.objectifs || 0}</div><div class="stat-mini-label">Objectifs</div></div>
+        `;
+    }
+
+    function getIconeType(type) {
+        const map = { cv:'📄', quiz:'❓', fiches:'📝', objectifs:'🎯', budget:'💵', moyenne:'📊', planning:'📅', todo:'📋', candidatures:'💼', coloc:'🏠', checklist:'📋', manuel:'💾' };
+        return map[type] || '📦';
+    }
+
+    function filtrerParCategorie(categorie, element) {
+        currentFilter = categorie;
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+        if (element) element.classList.add('active');
+        filtrerEtAfficher();
+    }
+
+    function trierSauvegardes(sort) {
+        currentSort = sort;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        filtrerEtAfficher();
+    }
+
+    function filtrerEtAfficher() {
+        let filtered = toutesSauvegardes;
+        if (currentFilter !== 'all') filtered = filtered.filter(s => s.type === currentFilter);
+        const search = document.getElementById('search-input').value.toLowerCase();
+        if (search) filtered = filtered.filter(s => s.title.toLowerCase().includes(search) || s.preview.toLowerCase().includes(search));
+        if (currentSort === 'ancien') filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+        else if (currentSort === 'alpha') filtered.sort((a,b) => a.title.localeCompare(b.title));
+        else filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+        const container = document.getElementById('sauvegardes-container');
+        const emptyDiv = document.getElementById('empty-state');
+        if (filtered.length === 0) {
+            container.innerHTML = '';
+            emptyDiv.style.display = 'block';
+            return;
+        }
+        emptyDiv.style.display = 'none';
+        container.innerHTML = filtered.map(s => {
+            const date = new Date(s.date).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            return `<div class="save-card">
+                <div class="save-header">
+                    <span class="save-type">${s.icone} ${s.type.toUpperCase()}</span>
+                    <span class="save-date">${date}</span>
+                </div>
+                <div class="save-title">${escapeHtml(s.title)}</div>
+                <div class="save-preview">${escapeHtml(s.preview)}</div>
+                <div class="save-actions">
+                    <button class="btn-action btn-restore" onclick="restaurerSauvegarde('${s.id}')">📂 Ouvrir</button>
+                    <button class="btn-action btn-export" onclick="exporterSauvegarde('${s.id}')">📥 Exporter</button>
+                    <button class="btn-action btn-delete" onclick="supprimerSauvegarde('${s.id}')">🗑️ Supprimer</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+
+    function restaurerSauvegarde(id) {
+        const save = toutesSauvegardes.find(s => s.id === id);
+        if (!save) return;
+        const source = SOURCES.find(s => s.key === save.sourceKey);
+        if (!source) return;
+        if (source.multiple) {
+            let existing = JSON.parse(localStorage.getItem(source.key) || '[]');
+            const idx = existing.findIndex(item => item.id === save.data.id);
+            if (idx !== -1) existing[idx] = save.data;
+            else existing.push(save.data);
+            localStorage.setItem(source.key, JSON.stringify(existing));
+        } else {
+            localStorage.setItem(source.key, JSON.stringify(save.data));
+        }
+        alert(`✅ ${save.title} restauré(e) avec succès.`);
+        if (save.outil && save.outil !== '#') window.location.href = save.outil;
+    }
+
+    function exporterSauvegarde(id) {
+        const save = toutesSauvegardes.find(s => s.id === id);
+        if (!save) return;
+        const blob = new Blob([JSON.stringify(save, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sauvegarde-${save.type}-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function exporterToutesSauvegardes() {
+        const blob = new Blob([JSON.stringify(toutesSauvegardes, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `toutes-sauvegardes-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importerSauvegardes() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (Array.isArray(data)) {
+                        data.forEach(item => {
+                            const source = SOURCES.find(s => s.key === item.sourceKey);
+                            if (!source) return;
+                            if (source.multiple) {
+                                let existing = JSON.parse(localStorage.getItem(source.key) || '[]');
+                                const idx = existing.findIndex(ex => ex.id === item.data.id);
+                                if (idx !== -1) existing[idx] = item.data;
+                                else existing.push(item.data);
+                                localStorage.setItem(source.key, JSON.stringify(existing));
+                            } else {
+                                localStorage.setItem(source.key, JSON.stringify(item.data));
+                            }
+                        });
+                        alert('✅ Sauvegardes importées avec succès !');
+                        chargerToutesSauvegardes();
+                    }
+                } catch(err) { alert('❌ Fichier invalide'); }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    function supprimerSauvegarde(id) {
+        if (!confirm('Supprimer cette sauvegarde ?')) return;
+        const save = toutesSauvegardes.find(s => s.id === id);
+        if (!save) return;
+        const source = SOURCES.find(s => s.key === save.sourceKey);
+        if (!source) return;
+        if (source.multiple) {
+            let existing = JSON.parse(localStorage.getItem(source.key) || '[]');
+            existing = existing.filter(item => item.id !== save.data.id);
+            localStorage.setItem(source.key, JSON.stringify(existing));
+        } else {
+            localStorage.removeItem(source.key);
+        }
+        chargerToutesSauvegardes();
+    }
+
+    function viderToutesSauvegardes() {
+        if (!confirm('⚠️ Supprimer TOUTES les sauvegardes ? IRRÉVERSIBLE !')) return;
+        localStorage.clear();
+        chargerToutesSauvegardes();
+        alert('✅ Toutes les sauvegardes ont été supprimées.');
+    }
+
+    chargerToutesSauvegardes();
+</script>
+<script src="adsense-check.js"></script>
+</body>
+</html>
